@@ -53,19 +53,38 @@ The watcher does not call a provider API. A provider adapter (the model using th
 
 No OS scheduler or background service is installed.
 
+## Components added in v0.2
+
+```
+agents/                       orchestrator, browser-qa, requirements-analyst, code-implementer, quality-gate, code-reviewer, prompt-refiner
+skills/run-task/SKILL.md      orchestrator playbook (main session) — calls agents with the per-stage model
+skills/refine-prompt/SKILL.md free prompt-score, refiner agent only when weak
+references/workflow.md        the 9 stages, branch gate, statuses, final report (generic WORKFLOW.md)
+references/task-packet.md     packet template (copied into <state>/runs/<run-id>/)
+references/stacks/*.md        frontend / backend / netsuite guides for workers
+scripts/lib/stack.mjs         detect-stack (manifests only; commands only from real files)
+scripts/lib/routing.mjs       size S/M/L/XL → model per stage; premium only as approved proposal
+scripts/lib/prompt-score.mjs  5-axis heuristic score (EN + AR)
+scripts/lib/branch-guard.mjs  pure command analysis; hooks/branch-guard.mjs is the opt-in PreToolUse entry
+```
+
+**Token strategy (#6).** Deterministic work (locks, resume, fingerprints, routing, change identity, prompt pre-score, stack detection) runs in scripts at zero model cost. Workers get file paths and a context budget instead of file dumps. The watcher and quality gate run on Haiku; the prompt refiner runs only when the free score is below 7.
+
+**Why agents are thin and the playbook is a skill.** The orchestrator must be the main conversation to delegate to workers. `/engineering-ops:run-task` loads the playbook into the main session; `agents/orchestrator.md` exists for `claude --agent engineering-ops:orchestrator` and just invokes that skill.
+
 ## Migration map (later versions)
 
 | Version | Item | Source in SuiteFleet | Target |
 |---|---|---|---|
-| v0.2 | `orchestrator` | `fleet-coordinator.md` | `agents/orchestrator.md` + `skills/run-task` (9 stages, uses `stage-done` / `task-resume` / `action-*` already in state.mjs) |
-| v0.2 | `browser-qa` | `browser-verifier.md` | `agents/browser-qa.md` (URLs from `config.environments`) |
-| v0.2 | `requirements-analyst` | `task-analyst.md` | stack-neutral paths via `scripts/detect-stack.mjs` |
-| v0.2 | `code-implementer` | `task-implementer.md` | branch policy from config, not hard-coded |
-| v0.2 | `quality-gate` | `test-runner.md` | commands discovered from package.json / pyproject / SuiteCloud |
-| v0.2 | `code-reviewer` | `change-reviewer.md` | unchanged contract |
-| v0.2 | model routing | coordinator "Model choice" | orchestrator rates task size S/M/L/XL → haiku/sonnet; premium only with approval |
-| v0.2 | `prompt-refiner` | — (new) | scores a request on 5 axes; offers a better prompt below 7/10 |
-| v0.2 | branch guard | `guard-branch-workflow.mjs` | generic hook reading `protected_branches` from config |
+| ✅ v0.2 | `orchestrator` | `fleet-coordinator.md` | `agents/orchestrator.md` + `skills/run-task` (9 stages, uses `stage-done` / `task-resume` / `action-*` already in state.mjs) |
+| ✅ v0.2 | `browser-qa` | `browser-verifier.md` | `agents/browser-qa.md` (URLs from `config.environments`) |
+| ✅ v0.2 | `requirements-analyst` | `task-analyst.md` | stack-neutral paths via `scripts/detect-stack.mjs` |
+| ✅ v0.2 | `code-implementer` | `task-implementer.md` | branch policy from config, not hard-coded |
+| ✅ v0.2 | `quality-gate` | `test-runner.md` | commands discovered from package.json / pyproject / SuiteCloud |
+| ✅ v0.2 | `code-reviewer` | `change-reviewer.md` | unchanged contract |
+| ✅ v0.2 | model routing | coordinator "Model choice" | orchestrator rates task size S/M/L/XL → haiku/sonnet; premium only with approval |
+| ✅ v0.2 | `prompt-refiner` | — (new) | scores a request on 5 axes; offers a better prompt below 7/10 |
+| ✅ v0.2 | branch guard | `guard-branch-workflow.mjs` | generic hook reading `protected_branches` from config |
 | v0.3 | `performance-auditor`, `architecture-auditor`, `ux-auditor` | same names | generic origins/paths |
 | v0.3 | `security-auditor` | — (new) | OWASP Top 10:2025 checks + fixes, read-only |
 | v0.3 | `market-scout` | — (new) | competitor feature matrix + prioritized recommendations |

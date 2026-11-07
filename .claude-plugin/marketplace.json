@@ -8,8 +8,8 @@
     {
       "name": "engineering-ops",
       "source": "./",
-      "description": "Read-only task-board watcher, Card Check, work log and alerts for any project.",
-      "version": "0.1.0"
+      "description": "Task watcher, Card Check, engineering agents with model routing, prompt refiner, work log and alerts for any project.",
+      "version": "0.2.0"
     }
   ]
 }

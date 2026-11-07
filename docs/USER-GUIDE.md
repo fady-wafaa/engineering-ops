@@ -1,4 +1,4 @@
-# User Guide — Engineering Ops v0.1
+# User Guide — Engineering Ops v0.2
 
 [English](#english) · [العربية](#arabic)
 
@@ -56,9 +56,24 @@ CHANGED: Export | Product / Backlog | https://trello.com/c/… | Card check: MIS
 | WATCHER_FAILED | The last board check failed | Check the connection |
 | TIMER_RUNNING | A timer ran 8+ hours | Did you forget to pause? |
 
-### 5. Good to know
+### 5. Working on a task with the agents (v0.2)
 
-- v0.1 never changes Trello, Git or your code.
+1. Once per project: menu **9. Workflow setup**. Claude detects your stack and test commands, and asks for branch rules and test URLs.
+2. Menu **10. Run a task** (or `/engineering-ops:run-task <card link>`).
+3. If your request is vague, you get a better version first (you can keep yours).
+4. Choose the mode for this task:
+   - **intake-only** — analysis and a handoff (code map, impact, acceptance criteria, questions). No code changes.
+   - **full** — a new task branch, the change, tests, browser check, review and a final report.
+5. You see the plan in one line, e.g. `Size M — analysis: sonnet, implementation: sonnet, checks: haiku, review: sonnet`. A stronger, more expensive model is only used if you approve it for one named step.
+6. Claude stops and asks when it needs you: login in the browser, a product answer, a branch choice. It never commits, pushes, merges, deploys or updates cards without your permission.
+7. Interrupted? Run the same card again: it continues from the last valid step.
+
+Check a prompt any time: `/engineering-ops:refine-prompt <your request>`.
+
+### 6. Good to know
+
+- Monitoring and analysis never change Trello, Git or your code. Code changes happen only in **full** mode on a task branch.
+- The branch guard is off until you turn it on in Workflow setup. When on, it blocks taking code from a QA branch (like `develop`) into a task branch and committing on protected branches.
 - Your settings are in `~/.engineering-ops/projects/<project>/`, not in your project.
 - Desktop scheduled checks need the Claude Desktop app open and the computer awake. `/loop` checks stop when the session closes.
 
@@ -115,9 +130,24 @@ CHANGED: Export | Product / Backlog | https://trello.com/c/… | Card check: MIS
 | WATCHER_FAILED | آخر فحص للبورد فشل | راجع الاتصال |
 | TIMER_RUNNING | التايمر شغال ٨ ساعات أو أكتر | نسيت تعمل pause؟ |
 
-### ٥. معلومات مهمة
+### ٥. الشغل على تاسك مع الـ Agents (نسخة 0.2)
 
-- النسخة 0.1 عمرها ما بتغيّر حاجة في Trello أو Git أو الكود.
+1. مرة واحدة لكل مشروع: القائمة **9. Workflow setup**. Claude بيتعرّف على نوع المشروع وأوامر الاختبار، ويسألك عن قواعد الـ branches وروابط الاختبار.
+2. القائمة **10. Run a task** (أو `/engineering-ops:run-task <لينك الكارت>`).
+3. لو طلبك مش واضح، هيقترح عليك صيغة أحسن الأول (وتقدر تفضل على صيغتك).
+4. اختار الطريقة للتاسك دي:
+   - **intake-only** = تحليل وتسليم (خريطة الكود، الأثر، معايير القبول، الأسئلة) من غير ما الكود يتغير.
+   - **full** = branch جديد، التعديل، الاختبارات، فحص في المتصفح، مراجعة، وتقرير نهائي.
+5. هتشوف الخطة في سطر واحد، زي `Size M — analysis: sonnet, implementation: sonnet, checks: haiku, review: sonnet`. الموديل الأقوى والأغلى مبيستخدمش إلا لو إنت وافقت عليه لخطوة واحدة محددة.
+6. Claude بيقف ويسألك لما يحتاجك: login في المتصفح، إجابة من صاحب المنتج، أو اختيار branch. عمره ما بيعمل commit أو push أو merge أو deploy أو يحدّث كارت من غير إذنك.
+7. الشغل اتقطع؟ شغّل نفس الكارت تاني، وهيكمّل من آخر خطوة سليمة.
+
+تقدر تراجع أي برومبت في أي وقت: `/engineering-ops:refine-prompt <طلبك>`.
+
+### ٦. معلومات مهمة
+
+- المراقبة والتحليل عمرهم ما بيغيروا حاجة في Trello أو Git أو الكود. تعديل الكود بيحصل بس في **full** على task branch.
+- الـ branch guard مقفول لحد ما تفعّله من Workflow setup. لما يتفعّل، بيمنع إن كود من branch الـ QA (زي `develop`) يدخل في task branch، وبيمنع الـ commit على الـ branches المحمية.
 - إعداداتك محفوظة في `~/.engineering-ops/projects/<project>/` مش جوه المشروع.
 - الفحص المجدول في الديسكتوب محتاج التطبيق مفتوح والجهاز صاحي. فحص `/loop` بيقف لما الجلسة تتقفل.
 

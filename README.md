@@ -1,18 +1,24 @@
 # Engineering Ops
 
-A reusable Claude Code plugin that watches your task board and tells you, in one message, **which new or changed cards are assigned to you and what information is missing before you can start**. It also tracks how long each task takes (with its GitHub PR comments) and warns you when work is stuck.
+A reusable Claude Code plugin that watches your task board and tells you, in one message, **which new or changed cards are assigned to you and what information is missing before you can start** — then takes a card from intake to a tested, reviewed change with a small team of agents, using the cheapest model that fits each step. It also tracks how long each task takes (with its GitHub PR comments) and warns you when work is stuck.
 
-It works with any project — frontend, backend or NetSuite — because it does not depend on your code layout. **v0.1 is read-only**: it never changes your cards, code or Git branches.
+It works with any project — frontend, backend or NetSuite — and detects the stack, test commands and entry points itself. Monitoring and analysis are read-only; code changes happen only when you choose **full** mode for a task, on a verified task branch. It never commits, pushes, merges, deploys or updates cards without your explicit permission.
 
-> Status: **v0.1.0** — Trello watcher, Card Check, work log, alerts. Agents, auditors, the dashboard, Codex packaging and Jira come in later versions (see [CHANGELOG](CHANGELOG.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
+> Status: **v0.2.0** — watcher, Card Check, work log, alerts, core agents, model routing, prompt refiner, stack detection, branch guard. Auditors (performance, architecture, UX, security), market scout, the dashboard, Codex packaging and Jira come next (see [CHANGELOG](CHANGELOG.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
 
 ## What you get
 
 | Command | What it does |
 |---|---|
-| `/engineering-ops:engineering` | Menu: setup, check now, start/stop/status monitoring, analyze a card, work log, alerts |
+| `/engineering-ops:engineering` | Menu: setup, check now, start/stop/status monitoring, analyze a card, work log, alerts, workflow setup, run a task |
+| `/engineering-ops:run-task` | One card through 9 stages: intake → browser baseline → analysis → questions → mode + branch gate → implementation → checks → review → report |
+| `/engineering-ops:refine-prompt` | Free score of a request; a better version only when it is weak |
 | `/engineering-ops:task-watcher` | One read-only check of your board (used by the scheduler) |
 | `/engineering-ops:worklog` | Start / pause / stop a task timer; Markdown or CSV report; GitHub PR comments |
+
+**Agents** (each usable alone, e.g. `@agent-engineering-ops:code-reviewer`): `orchestrator`, `browser-qa`, `requirements-analyst`, `code-implementer`, `quality-gate`, `code-reviewer`, `prompt-refiner`.
+
+**Model routing:** each task is sized S / M / L / XL from simple signals (files, ambiguity, shared code, cross-layer, security, migration). Cheap stages run on Haiku, code and analysis on Sonnet; a premium model is only *proposed* for a named stage and needs your approval.
 
 **Card Check** gives every new or changed card `READY` or `MISSING_INFO` with the exact missing items:
 - all cards: clear title, description, type (BUG / FEATURE / MIXED), screen or area
@@ -76,7 +82,7 @@ npm test
 claude plugin validate .
 ```
 
-63 automated tests cover locks (including races), the ledger and resume, the time window (DST), watcher ingest, Card Check, notifications de-duplication, the Trello REST client with mocked responses (auth failure, timeout, token scrubbing), the work log and alerts.
+91 automated tests cover locks (including races), the ledger and resume, the time window (DST), watcher ingest, Card Check, notification de-duplication, the Trello REST client with mocked responses (auth failure, timeout, token scrubbing), the work log, alerts, stack detection (React, Next, Express, Django, NetSuite SDF, monorepos), model routing, prompt scoring, the branch guard (including the real hook process) and change identity.
 
 The design and the audit of the original system are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/AUDIT.md](docs/AUDIT.md).
 

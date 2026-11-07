@@ -1,6 +1,7 @@
 // Shared helpers: argument parsing, JSON output, atomic files, state paths, config.
 // Zero dependencies. Works on Windows, macOS and Linux with Node >= 18.
 
+import { execFileSync } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
@@ -98,9 +99,25 @@ export function projectSlugFor(dir) {
   return `${base}-${hash}`;
 }
 
-export function resolveProject(args = {}) {
+// The project root is the git top level when there is one, so the slug is the same from
+// any subfolder (hooks and scheduled tasks may start in different folders).
+export function projectRoot(dir = process.cwd()) {
+  try {
+    const top = execFileSync("git", ["rev-parse", "--show-toplevel"], {
+      cwd: dir,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: 5000,
+    }).trim();
+    return top ? path.resolve(top) : path.resolve(dir);
+  } catch {
+    return path.resolve(dir);
+  }
+}
+
+export function resolveProject(args = {}, cwd = process.cwd()) {
   const explicit = args.project || process.env.ENGOPS_PROJECT;
-  const slug = explicit ? String(explicit).replace(/[^a-zA-Z0-9._-]/g, "_") : projectSlugFor(process.cwd());
+  const slug = explicit ? String(explicit).replace(/[^a-zA-Z0-9._-]/g, "_") : projectSlugFor(projectRoot(cwd));
   const stateDir =
     process.env.ENGOPS_STATE_DIR ||
     process.env.AI_WORKFLOW_STATE_DIR ||

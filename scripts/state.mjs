@@ -25,6 +25,8 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { assessCard } from "./lib/assess.mjs";
+import { scorePrompt } from "./lib/prompt-score.mjs";
+import { routeTask } from "./lib/routing.mjs";
 import {
   atomicWrite,
   deepMerge,
@@ -458,6 +460,9 @@ function cmdStageDone() {
     change_identity: args["change-identity"] || null,
     evidence: args.evidence || null,
     run_id: args["run-id"] || entry.run_id || null,
+    // Planned vs actual model are recorded separately; "actual" only when verifiable.
+    model_planned: args["model-planned"] || null,
+    model_actual: args["model-actual"] || null,
     completed_at: nowDate().toISOString(),
   };
   const patch = { stages, current_stage: args.stage };
@@ -1100,9 +1105,139 @@ function cmdAlertAck() {
   printJson({ ok: true, alert: store.active[args.key] });
 }
 
+// ---- v0.2: pipeline helpers ---------------------------------------------------------
+
+function cmdRouteTask() {
+  const parsed = jsonArg(args) ? parseJsonArg(args, "route-task") : { value: {} };
+  if (parsed.error) return fail(parsed.error, { detail: parsed.detail });
+  const input = { ...parsed.value };
+  if (args.size) input.size = args.size;
+  const result = routeTask(input);
+  if (args.id) {
+    withWriteLock(() => {
+      const ledger = loadLedger();
+      ledger.tasks[args.id] = { ...(ledger.tasks[args.id] || {}), routing: { size: result.size, models: result.models, at: new Date().toISOString() }, updated_at: new Date().toISOString() };
+      saveLedger(ledger);
+    });
+  }
+  printJson(result);
+}
+
+function cmdPromptScore() {
+  let text;
+  if (args.text) text = String(args.text);
+  else {
+    const parsed = parseJsonArg(args, "prompt-score");
+    if (parsed.error) return fail(parsed.error, { detail: parsed.detail });
+    text = typeof parsed.value === "string" ? parsed.value : parsed.value.text;
+  }
+  printJson(scorePrompt(text));
+}
+
+// Creates the run folder for one task run, outside the repository.
+function cmdRunInit() {
+  if (!args.id) return fail("run-init requires --id");
+  const runId = String(args["run-id"] || utcRunId("run"));
+  const dir = path.join(STATE_DIR, "runs", runId.replace(/[^a-zA-Z0-9._-]/g, "_"));
+  fs.mkdirSync(path.join(dir, "evidence"), { recursive: true });
+  const ledger = loadLedger();
+  const entry = ledger.tasks[args.id] || {};
+  ledger.tasks[args.id] = { ...entry, run_id: runId, run_dir: dir, updated_at: new Date().toISOString() };
+  saveLedger(ledger);
+  printJson({ ok: true, id: args.id, run_id: runId, run_dir: dir, packet_path: path.join(dir, "task-packet.md"), evidence_dir: path.join(dir, "evidence"), previous_run_id: entry.run_id || null });
+}
+
+// Change identity = SHA-256 over the diff against a base (default HEAD) plus every
+// untracked, non-ignored file's path and content hash. Read-only git commands only.
+function cmdDiffIdentity() {
+  const repo = path.resolve(String(args.repo || process.cwd()));
+  const base = String(args.base || "HEAD");
+  const git = (...a) => execFileSync("git", a, { cwd: repo, encoding: "buffer", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 256 * 1024 * 1024 });
+  let diff;
+  let untracked;
+  let branch;
+  let baseCommit;
+  try {
+    diff = git("diff", "--binary", "--no-ext-diff", base);
+    untracked = git("ls-files", "--others", "--exclude-standard", "-z").toString("utf8").split("\0").filter(Boolean).sort();
+    branch = git("rev-parse", "--abbrev-ref", "HEAD").toString("utf8").trim();
+    baseCommit = git("rev-parse", base).toString("utf8").trim();
+  } catch (e) {
+    return fail("git_failed", { detail: truncate(String(e.stderr || e.message || e).split("\n")[0], 300) });
+  }
+  const manifest = untracked.map((f) => {
+    let h = "unreadable";
+    try {
+      h = crypto.createHash("sha256").update(fs.readFileSync(path.join(repo, f))).digest("hex");
+    } catch {
+      // deleted between listing and reading; keep the marker so the identity still changes
+    }
+    return `${f}\t${h}`;
+  });
+  const hash = crypto.createHash("sha256").update(diff).update("\n--untracked--\n").update(manifest.join("\n")).digest("hex");
+  const changedFiles = git("diff", "--name-only", base).toString("utf8").split("\n").filter(Boolean);
+  let saved = null;
+  if (args.save) {
+    const dir = path.resolve(String(args.save));
+    fs.mkdirSync(dir, { recursive: true });
+    atomicWrite(path.join(dir, `diff-${hash.slice(0, 12)}.patch`), diff.toString("utf8"));
+    atomicWrite(path.join(dir, `untracked-${hash.slice(0, 12)}.txt`), manifest.join("\n") + "\n");
+    saved = dir;
+  }
+  printJson({
+    ok: true,
+    change_identity: hash,
+    short: hash.slice(0, 12),
+    base,
+    base_commit: baseCommit,
+    branch,
+    changed_files: changedFiles,
+    untracked_files: untracked,
+    empty: diff.length === 0 && untracked.length === 0,
+    saved_to: saved,
+  });
+}
+
+const FINAL_STATUSES = new Set([
+  "READY_FOR_IMPLEMENTATION", "NEEDS_CLARIFICATION", "NEEDS_BRANCH_DECISION", "CHANGES_REQUIRED", "READY_FOR_REVIEW",
+  "AWAITING_DEPLOYMENT", "BLOCKED", "IN_PROGRESS", "INTAKE_DONE",
+]);
+
+function cmdTaskStatus() {
+  if (!args.id || !args.status) return fail("task-status requires --id and --status");
+  const status = String(args.status).toUpperCase();
+  if (!FINAL_STATUSES.has(status)) return fail("unknown status", { allowed: [...FINAL_STATUSES] });
+  const ledger = loadLedger();
+  const entry = ledger.tasks[args.id] || {};
+  const patch = { status, status_at: new Date().toISOString() };
+  if (status === "BLOCKED") patch.blocked_reason = args.reason ? String(args.reason) : entry.blocked_reason || "no reason saved";
+  else patch.blocked_reason = null;
+  ledger.tasks[args.id] = { ...entry, ...patch, updated_at: new Date().toISOString() };
+  saveLedger(ledger);
+  printJson({ ok: true, id: args.id, ...patch });
+}
+
+function cmdRepairRound() {
+  if (!args.id) return fail("repair-round requires --id");
+  const max = Number(args.max ?? config().alerts?.max_repair_rounds ?? 2);
+  const ledger = loadLedger();
+  const entry = ledger.tasks[args.id] || {};
+  const used = Number(entry.repair_rounds || 0);
+  if (used >= max) return printJson({ ok: true, allowed: false, reason: "max_repair_rounds_reached", repair_rounds: used, max });
+  ledger.tasks[args.id] = { ...entry, repair_rounds: used + 1, updated_at: new Date().toISOString() };
+  saveLedger(ledger);
+  printJson({ ok: true, allowed: true, repair_rounds: used + 1, max, remaining: max - used - 1 });
+}
+
 // ---- main -------------------------------------------------------------------------
 
 const COMMANDS = {
+  "route-task": cmdRouteTask,
+  "prompt-score": cmdPromptScore,
+  "run-init": () => withWriteLock(cmdRunInit),
+  "diff-identity": cmdDiffIdentity,
+  "task-status": () => withWriteLock(cmdTaskStatus),
+  "repair-round": () => withWriteLock(cmdRepairRound),
   paths: cmdPaths,
   "run-id": cmdRunId,
   "config-get": cmdConfigGet,

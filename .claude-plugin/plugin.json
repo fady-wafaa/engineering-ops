@@ -1,7 +1,7 @@
 {
   "name": "engineering-ops",
-  "version": "0.1.0",
-  "description": "Reusable AI engineering ops for any project: read-only task-board watcher (Trello), Card Check (READY / MISSING_INFO), work-time log with GitHub PR comments, and stuck/blocked alerts.",
+  "version": "0.2.0",
+  "description": "Reusable AI engineering ops for any project (frontend, backend, NetSuite): task-board watcher with Card Check, 9-stage engineering workflow with core agents and per-stage model routing, prompt refiner, work log with GitHub PR comments, alerts, and an opt-in branch guard.",
   "author": {
     "name": "Fady Wafa"
   },

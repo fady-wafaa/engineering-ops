@@ -1,0 +1,28 @@
+# Task packet
+
+- Run ID / started (UTC) / resumed from stage / invalidated stages / stale-lock recovery:
+- Task source / ID / URL / title / fingerprint (version) / manual input?:
+- Type: BUG | FEATURE | MIXED · Card Check: READY | MISSING_INFO (+ missing items):
+- Verified creator / responsible owner:
+- Stack (from detect-stack): kinds / frameworks / sub-project:
+- Repository / branch / base commit / initial working-tree state:
+- Execution mode: intake-only | full | unanswered — answer / author / time:
+- Routing: size / reasons / models per stage (planned → actual) / premium approvals (scope, limit):
+- Branch decision: NEW | REUSE | NEEDS_BRANCH_DECISION · template / name / base ref / start commit / verified by implementer at:
+- Environments: testing URL / local URL / role / synthetic dataset / allowed test-data actions:
+- Current vs wanted behavior (two sentences):
+- Baseline: REPRODUCED | NOT_REPRODUCED | BLOCKED | INCONCLUSIVE | BASELINE_RECORDED — steps / expected / observed / evidence files:
+- Code map (path + symbol, Confirmed / Hypothesis / Unknown):
+- Impact analysis (place / usage evidence / why / what to retest — or "limited to one screen" + evidence):
+- Acceptance criteria (start data / action / expected result; original or regression):
+- Questions (question / what it blocks / what can proceed / recipient / draft or sent ref):
+- Answers (author / time):
+- Proposed change / alternatives / trade-offs:
+- Gate: READY_FOR_IMPLEMENTATION | NEEDS_CLARIFICATION | BLOCKED
+- Change identity (SHA-256) / diff file / untracked manifest:
+- Checks: command / exit code / summary / log:
+- Postcheck: target / build-to-change mapping / case → PASS | FAIL | PARTIAL | BLOCKED:
+- Review: verdict / findings (blocker, important, polish) / reviewed identity = tested identity?:
+- Repair rounds used / max:
+- External actions (key / pending | done / evidence):
+- Final status / next human action:
