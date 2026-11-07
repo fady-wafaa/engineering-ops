@@ -1,0 +1,15 @@
+{
+  "name": "engineering-ops",
+  "version": "0.1.0",
+  "description": "Reusable AI engineering workflows for Claude Code and Codex: task watcher, card check, work log and alerts.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "test": "node --test tests/state.original.test.mjs tests/plugin.test.mjs",
+    "state": "node scripts/state.mjs"
+  }
+}

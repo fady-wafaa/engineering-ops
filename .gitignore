@@ -1,0 +1,9 @@
+node_modules/
+*.log
+*.tmp
+.env
+.env.*
+# Personal config and state never live in this repo (they are in ~/.engineering-ops/),
+# but guard against accidental local copies:
+.engineering-ops/
+.ai-runs/

@@ -1,0 +1,10 @@
+{
+  "name": "engineering-ops",
+  "version": "0.1.0",
+  "description": "Reusable AI engineering ops for any project: read-only task-board watcher (Trello), Card Check (READY / MISSING_INFO), work-time log with GitHub PR comments, and stuck/blocked alerts.",
+  "author": {
+    "name": "Fady Wafa"
+  },
+  "license": "MIT",
+  "keywords": ["engineering", "workflow", "trello", "task-monitoring", "worklog", "agents"]
+}

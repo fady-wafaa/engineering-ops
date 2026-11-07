@@ -1,0 +1,15 @@
+{
+  "name": "engineering-ops",
+  "owner": {
+    "name": "Fady Wafa"
+  },
+  "description": "Engineering Ops: reusable AI engineering workflows for Claude Code.",
+  "plugins": [
+    {
+      "name": "engineering-ops",
+      "source": "./",
+      "description": "Read-only task-board watcher, Card Check, work log and alerts for any project.",
+      "version": "0.1.0"
+    }
+  ]
+}
