@@ -8,8 +8,8 @@
     {
       "name": "engineering-ops",
       "source": "./",
-      "description": "Task watcher, Card Check, engineering agents with model routing, prompt refiner, work log and alerts for any project.",
-      "version": "0.2.0"
+      "description": "Task watcher, engineering agents with model routing, specialist audits (security, accessibility, performance, UI, UX, architecture, market) for any project.",
+      "version": "0.3.0"
     }
   ]
 }

@@ -25,6 +25,8 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { assessCard } from "./lib/assess.mjs";
+import { scoreAudit } from "./lib/audit.mjs";
+import { scorePerf } from "./lib/perf.mjs";
 import { scorePrompt } from "./lib/prompt-score.mjs";
 import { routeTask } from "./lib/routing.mjs";
 import {
@@ -52,6 +54,7 @@ const LEDGER_PATH = path.join(STATE_DIR, "ledger.json");
 const NOTIFY_PATH = path.join(STATE_DIR, "notifications.json");
 const WORKLOG_PATH = path.join(STATE_DIR, "worklog.json");
 const ALERTS_PATH = path.join(STATE_DIR, "alerts.json");
+const AUDITS_PATH = path.join(STATE_DIR, "audits.json");
 
 function ensureStateDir() {
   fs.mkdirSync(STATE_DIR, { recursive: true });
@@ -1217,6 +1220,70 @@ function cmdTaskStatus() {
   printJson({ ok: true, id: args.id, ...patch });
 }
 
+// ---- v0.3: audit history ------------------------------------------------------------
+
+const AUDIT_KINDS = new Set(["security", "accessibility", "performance", "ui-test", "ux", "architecture", "market"]);
+
+function cmdAuditRecord() {
+  const kind = String(args.kind || "");
+  if (!AUDIT_KINDS.has(kind)) return fail("audit-record requires --kind", { kinds: [...AUDIT_KINDS] });
+  const parsed = parseJsonArg(args, "audit-record");
+  if (parsed.error) return fail(parsed.error, { detail: parsed.detail });
+  const input = parsed.value;
+  if (!input.target) return fail("audit-record input needs a target");
+  const scored = kind === "market" ? { score: null, verdict: input.verdict || "REPORT", coverage: null, counts: null } : scoreAudit(input);
+  const store = readJsonSafe(AUDITS_PATH, { version: 1, runs: [] });
+  const previous = [...store.runs].reverse().find((r) => r.kind === kind && r.target === input.target) || null;
+  const record = {
+    id: utcRunId(`audit-${kind}`, nowDate()),
+    kind,
+    target: input.target,
+    at: nowDate().toISOString(),
+    ...scored,
+    criteria: input.criteria || [],
+    findings: (input.findings || []).map((f) => ({ id: f.id, title: f.title, severity: f.severity, location: f.location || null, fix: f.fix || null })),
+    report_path: input.report_path || null,
+  };
+  store.runs.push(record);
+  store.runs = store.runs.slice(-200);
+  ensureStateDir();
+  atomicWrite(AUDITS_PATH, JSON.stringify(store, null, 2));
+  let comparison = null;
+  if (previous) {
+    const prevIds = new Set(previous.findings.map((f) => f.id));
+    const nowIds = new Set(record.findings.map((f) => f.id));
+    comparison = {
+      previous_id: previous.id,
+      previous_at: previous.at,
+      score_before: previous.score,
+      score_after: record.score,
+      verdict_before: previous.verdict,
+      fixed: previous.findings.filter((f) => !nowIds.has(f.id)).map((f) => ({ id: f.id, severity: f.severity })),
+      new: record.findings.filter((f) => !prevIds.has(f.id)).map((f) => ({ id: f.id, severity: f.severity })),
+    };
+  }
+  printJson({ ok: true, record, comparison });
+}
+
+// Input: an array of perf-probe results (one per run), or {runs:[…], action_ms, action_budget_ms}.
+function cmdPerfScore() {
+  const parsed = parseJsonArg(args, "perf-score");
+  if (parsed.error) return fail(parsed.error, { detail: parsed.detail });
+  const v = parsed.value;
+  const runs = Array.isArray(v) ? v : v.runs || [];
+  if (!runs.length) return fail("perf-score needs at least one probe result");
+  printJson({ ok: true, ...scorePerf(runs, { action_ms: v.action_ms ?? null, action_budget_ms: v.action_budget_ms ?? 1000 }) });
+}
+
+function cmdAuditList() {
+  const store = readJsonSafe(AUDITS_PATH, { version: 1, runs: [] });
+  const runs = store.runs
+    .filter((r) => (!args.kind || r.kind === args.kind) && (!args.target || r.target === args.target))
+    .slice(-Number(args.limit || 20))
+    .map(({ criteria, findings, ...rest }) => ({ ...rest, findings: findings.length }));
+  printJson({ ok: true, runs });
+}
+
 function cmdRepairRound() {
   if (!args.id) return fail("repair-round requires --id");
   const max = Number(args.max ?? config().alerts?.max_repair_rounds ?? 2);
@@ -1232,6 +1299,9 @@ function cmdRepairRound() {
 // ---- main -------------------------------------------------------------------------
 
 const COMMANDS = {
+  "audit-record": () => withWriteLock(cmdAuditRecord),
+  "audit-list": cmdAuditList,
+  "perf-score": cmdPerfScore,
   "route-task": cmdRouteTask,
   "prompt-score": cmdPromptScore,
   "run-init": () => withWriteLock(cmdRunInit),

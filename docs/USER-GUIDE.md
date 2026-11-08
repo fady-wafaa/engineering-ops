@@ -1,4 +1,4 @@
-# User Guide — Engineering Ops v0.2
+# User Guide — Engineering Ops v0.3
 
 [English](#english) · [العربية](#arabic)
 
@@ -70,7 +70,23 @@ CHANGED: Export | Product / Backlog | https://trello.com/c/… | Card check: MIS
 
 Check a prompt any time: `/engineering-ops:refine-prompt <your request>`.
 
-### 6. Good to know
+### 6. Specialist agents (v0.3) — pick the one you need
+
+Menu items **11–17**, or call a skill directly:
+
+| You want to know… | Run |
+|---|---|
+| Is the code safe? (OWASP Top 10) | `/engineering-ops:security-audit` |
+| Can everyone use the pages? (keyboard, screen reader, zoom, contrast) | `/engineering-ops:accessibility-audit <page>` |
+| Why is a page or action slow? | `/engineering-ops:performance-audit <page> <action>` |
+| Does this feature work before release? | `/engineering-ops:ui-test <feature>` |
+| Is this journey easy to use? | `/engineering-ops:ux-audit <journey>` |
+| How is the system built, and what to change for my goal? | `/engineering-ops:architecture-audit <scope> <goal>` |
+| What are competitors doing that we are not? | `/engineering-ops:market-scout` |
+
+Every result starts with one line: **verdict · score · coverage** (`PASS`, `PASS_WITH_ISSUES`, `FAIL`, `BLOCKED`, `INSUFFICIENT_COVERAGE`). Then findings by severity (Critical → Info), each with a fix. Run the same audit again after fixing: it shows the score before and after, and which findings were fixed.
+
+### 7. Good to know
 
 - Monitoring and analysis never change Trello, Git or your code. Code changes happen only in **full** mode on a task branch.
 - The branch guard is off until you turn it on in Workflow setup. When on, it blocks taking code from a QA branch (like `develop`) into a task branch and committing on protected branches.
@@ -144,7 +160,23 @@ Check a prompt any time: `/engineering-ops:refine-prompt <your request>`.
 
 تقدر تراجع أي برومبت في أي وقت: `/engineering-ops:refine-prompt <طلبك>`.
 
-### ٦. معلومات مهمة
+### ٦. الوكلاء المتخصصين (نسخة 0.3): اختار اللي محتاجه
+
+القائمة من **11 لـ 17**، أو شغّل الـ skill مباشرة:
+
+| عايز تعرف… | شغّل |
+|---|---|
+| الكود آمن؟ (OWASP Top 10) | `/engineering-ops:security-audit` |
+| الصفحات ينفع يستخدمها أي حد؟ (كيبورد، قارئ شاشة، تكبير، تباين ألوان) | `/engineering-ops:accessibility-audit <الصفحة>` |
+| ليه الصفحة أو الحركة دي بطيئة؟ | `/engineering-ops:performance-audit <الصفحة> <الحركة>` |
+| الميزة شغالة قبل ما ننزلها؟ | `/engineering-ops:ui-test <الميزة>` |
+| الرحلة دي سهلة على المستخدم؟ | `/engineering-ops:ux-audit <الرحلة>` |
+| النظام مبني إزاي، وأغيّر إيه عشان هدفي؟ | `/engineering-ops:architecture-audit <النطاق> <الهدف>` |
+| المنافسين بيعملوا إيه احنا مش بنعمله؟ | `/engineering-ops:market-scout` |
+
+كل نتيجة بتبدأ بسطر واحد: **الحكم · الدرجة · التغطية** (`PASS` أو `PASS_WITH_ISSUES` أو `FAIL` أو `BLOCKED` أو `INSUFFICIENT_COVERAGE`). بعدها المشاكل مترتبة حسب الخطورة من Critical لـ Info، وكل مشكلة معاها طريقة حلها. لو شغّلت نفس الفحص تاني بعد ما تصلّح، هيوريك الدرجة قبل وبعد، وأنهي مشاكل اتحلت.
+
+### ٧. معلومات مهمة
 
 - المراقبة والتحليل عمرهم ما بيغيروا حاجة في Trello أو Git أو الكود. تعديل الكود بيحصل بس في **full** على task branch.
 - الـ branch guard مقفول لحد ما تفعّله من Workflow setup. لما يتفعّل، بيمنع إن كود من branch الـ QA (زي `develop`) يدخل في task branch، وبيمنع الـ commit على الـ branches المحمية.

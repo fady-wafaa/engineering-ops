@@ -1,6 +1,6 @@
 {
   "name": "engineering-ops",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Reusable AI engineering workflows for Claude Code: task watcher, card check, engineering agents with model routing, prompt refiner, work log and alerts.",
   "type": "module",
   "private": true,
@@ -9,7 +9,7 @@
     "node": ">=18.17"
   },
   "scripts": {
-    "test": "node --test tests/state.original.test.mjs tests/plugin.test.mjs tests/v02.test.mjs",
+    "test": "node --test tests/state.original.test.mjs tests/plugin.test.mjs tests/v02.test.mjs tests/v03.test.mjs",
     "state": "node scripts/state.mjs"
   }
 }

@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.3.0 — 2026-11-08
+
+Each specialist is a **separate agent with its own skill**: the user picks the one they need (no combined QA step). Every agent has a stated goal, numbered scoring criteria with a minimum coverage, evidence rules and a fixed report format (`references/audit-contract.md`).
+
+### Added
+- **security-auditor** + `/engineering-ops:security-audit` (#4): OWASP Top 10:2025 (A01–A10, verified against owasp.org), confirmed findings only, exploit scenario and code fix for each; `references/owasp-top10-2025.md` with detection and fixes per category, including NetSuite.
+- **accessibility-auditor** + `/engineering-ops:accessibility-audit`: WCAG 2.2 AA, 12 criteria; in-page probe (`references/probes/a11y-probe.js`: names/labels, real contrast ratios, headings, landmarks, duplicate IDs, target size), keyboard walk, 320 px reflow, RTL.
+- **performance-auditor** + `/engineering-ops:performance-audit`: in-page probe (`references/probes/perf-probe.js`: LCP, INP, CLS, FCP, TTFB, long tasks, page weight, slow/repeated requests), 3 runs, median, scored against Core Web Vitals thresholds by `state.mjs perf-score`.
+- **ui-tester** + `/engineering-ops:ui-test`: test plan first, PASS/FAIL per case, reproducible bug reports; data changes only when allowed.
+- **ux-auditor** + `/engineering-ops:ux-audit` and **architecture-auditor** + `/engineering-ops:architecture-audit`: generic ports with explicit criteria (6 and 9).
+- **market-scout** + `/engineering-ops:market-scout` (#8): feature inventory from code, sourced competitor matrix, gap analysis, recommendations ranked by impact × reach × confidence ÷ effort.
+- `scripts/audit-scan.mjs`: free static pre-scan — security (OWASP-mapped rules, supply-chain project checks, optional `--deps` audit, secret values always redacted) and accessibility; calibrated on real projects to cut false positives (route constants, i18n labels, comments, tests, spread props, focus-visible styles).
+- `state.mjs`: `audit-record` (score and verdict computed from criteria + findings, history, before/after comparison), `audit-list`, `perf-score`.
+- Menu items 11–17 in `/engineering-ops:engineering`.
+- 17 new tests (108 total).
+
+### Verified in a real browser
+- Accessibility probe found all 7 planted issues on a test page (plus a missing `lang`), with an exact contrast ratio.
+- Performance probe: fixed INP measurement — browsers only buffer interactions ≥ 104 ms, so the probe now installs its own observer on the first run (a real click then measured 48 ms instead of null).
+
 ## 0.2.0 — 2026-11-07
 
 ### Added

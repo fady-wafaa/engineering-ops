@@ -1,7 +1,7 @@
 ---
 name: engineering
 description: Main menu for Engineering Ops — set up task monitoring for this project (Trello), check assigned cards now, start/stop/status of the watcher, read-only analysis of a selected card, work log, alerts, engineering-workflow setup (stack, test commands, branch rules) and running a task through the agents. Use when the user runs /engineering-ops:engineering, asks to set up or check their task board, or wants to analyze or start a card.
-argument-hint: "[setup | check | start | stop | status | analyze <card> | worklog | alerts | workflow-setup | run <card>]"
+argument-hint: "[setup | check | start | stop | status | analyze <card> | worklog | alerts | workflow-setup | run <card> | security | accessibility | performance | ui-test | ux | architecture | market]"
 ---
 
 # Engineering Ops
@@ -27,11 +27,20 @@ Engineering Ops — <project name or folder>   (setup: done | not done)
 8. Alerts
 9. Workflow setup (stack, test commands, branch rules, environments)
 10. Run a task with the engineering agents
+--- Specialist agents (pick one) ---
+11. Security audit (OWASP Top 10:2025)
+12. Accessibility audit (WCAG 2.2 AA)
+13. Performance audit (Core Web Vitals)
+14. UI test (functional test of a feature)
+15. UX audit (journey usability)
+16. Architecture audit
+17. Market scout (competitors and feature gaps)
 ```
 Ask for a number. If setup is not done, recommend 1 first; recommend 9 before the first 10.
 
 ## Safety rules (always)
 - Items 1–9: read-only for Trello / Jira, Git and application code. No commits, pushes, merges, deploys, branch creation, card edits or comments.
+- Items 11–17: read-only audits. They never edit code; browser agents change app data only through actions the user explicitly allowed for that run; market-scout only reads public web pages.
 - Item 10 follows the run-task skill: code changes only in full mode on a verified task branch; still no commit, push, merge, deploy or card update without explicit permission.
 - Never ask for API keys, tokens or passwords in chat. Credentials live only in environment variables or the connector the user already authorized.
 - Never claim a connection, a monitor or a result you did not verify.
@@ -141,3 +150,16 @@ Also mirror `max_repair_rounds` into `alerts.max_repair_rounds`.
 
 ## 10. Run a task
 Invoke the `engineering-ops:run-task` skill with the card URL / ID (and mode if the user said it). It must run in this main conversation — do not hand it to a subagent.
+
+## 11–17. Specialist agents (each runs alone — the user picks one)
+Each item invokes its own skill directly. There is no combined QA step: run exactly the one the user chose, with the user's words as arguments.
+| # | Agent | Skill | Goal |
+|---|---|---|---|
+| 11 | security-auditor | `engineering-ops:security-audit` | Confirmed OWASP Top 10:2025 vulnerabilities with fixes |
+| 12 | accessibility-auditor | `engineering-ops:accessibility-audit` | WCAG 2.2 AA: can keyboard, screen-reader and zoom users complete the pages |
+| 13 | performance-auditor | `engineering-ops:performance-audit` | Core Web Vitals and where the time goes, with fixes |
+| 14 | ui-tester | `engineering-ops:ui-test` | Does the feature work as expected; reproducible bug reports |
+| 15 | ux-auditor | `engineering-ops:ux-audit` | Where users hesitate or fail on a journey; testable improvements |
+| 16 | architecture-auditor | `engineering-ops:architecture-audit` | How the system is built; smallest change for the stated goal |
+| 17 | market-scout | `engineering-ops:market-scout` | Feature gaps vs competitors; ranked features to win customers |
+Audit history and before/after comparison: `STATE audit-list [--kind <kind>]`.

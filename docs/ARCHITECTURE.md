@@ -85,9 +85,10 @@ scripts/lib/branch-guard.mjs  pure command analysis; hooks/branch-guard.mjs is t
 | ✅ v0.2 | model routing | coordinator "Model choice" | orchestrator rates task size S/M/L/XL → haiku/sonnet; premium only with approval |
 | ✅ v0.2 | `prompt-refiner` | — (new) | scores a request on 5 axes; offers a better prompt below 7/10 |
 | ✅ v0.2 | branch guard | `guard-branch-workflow.mjs` | generic hook reading `protected_branches` from config |
-| v0.3 | `performance-auditor`, `architecture-auditor`, `ux-auditor` | same names | generic origins/paths |
-| v0.3 | `security-auditor` | — (new) | OWASP Top 10:2025 checks + fixes, read-only |
-| v0.3 | `market-scout` | — (new) | competitor feature matrix + prioritized recommendations |
+| ✅ v0.3 | `performance-auditor`, `architecture-auditor`, `ux-auditor` | same names | generic origins/paths |
+| ✅ v0.3 | `security-auditor` | — (new) | OWASP Top 10:2025 checks + fixes, read-only |
+| ✅ v0.3 | `market-scout` | — (new) | competitor feature matrix + prioritized recommendations |
+| ✅ v0.3 | `accessibility-auditor`, `ui-tester` | — (new; accessibility was "planned, not built" in SuiteFleet) | WCAG 2.2 AA probe; functional journey testing |
 | v0.4 | dashboard | — (new) | `scripts/dashboard/` local web UI reading the state files above |
 | v0.4 | Codex | — | `AGENTS.md` + `scripts/install-codex.mjs` |
 | v0.4 | Jira | — | provider adapter producing the neutral document |
