@@ -649,7 +649,8 @@ function cmdNotifyHistory() {
 // Input (from the Trello MCP read or scripts/trello.mjs fetch):
 //   { status: "ok"|"incomplete"|"blocked", reason?, member_id, cards: [ { id, name, desc,
 //     url, list, board, labels, due, checklists, members|idMembers, closed } ] }
-// Filters open cards assigned to member_id, fingerprints them, classifies new / changed /
+// Filters open cards assigned to member_id (or with no member assigned at all), fingerprints
+// them, classifies new / changed /
 // unchanged, runs the Card Check on new + changed cards, saves everything, records the
 // poll and decides the single notification. An incomplete read marks nothing as seen.
 
@@ -699,7 +700,7 @@ function cmdWatchIngest() {
     if (!memberId) return fail("watch-ingest needs member_id (input or config provider.member_id)");
     const eligible = cardList(input)
       .map(normalizeInputCard)
-      .filter((c) => !c.closed && memberIds(c).includes(memberId));
+      .filter((c) => !c.closed && (memberIds(c).length === 0 || memberIds(c).includes(memberId)));
     poll = { run_id: runId, status: "ok", new_cards: [], changed_cards: [], unchanged_count: 0, eligible_count: eligible.length };
     for (const card of eligible) {
       const prev = ledger.tasks[card.id] || {};
