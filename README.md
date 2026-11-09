@@ -4,7 +4,7 @@ Engineering Ops is a Claude Code plugin for teams that use Trello. It shows your
 
 You can use the same plugin in frontend, backend, and NetSuite projects. Each project has its own settings. Choose **full** mode when you want Claude to change code on a branch for the task.
 
-> Status: **v0.3.0** — watcher, Card Check, work log, alerts, core agents, model routing, prompt refiner, stack detection, branch guard, and seven specialist agents (security, accessibility, performance, UI test, UX, architecture, market scout). The dashboard, Codex packaging and Jira come next (see [CHANGELOG](CHANGELOG.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
+> Status: **v0.3.0** — watcher, Card Check, work log, alerts, core agents, model routing, prompt refiner, stack detection, branch guard, and six specialist agents (security, accessibility, performance, UI test, UX, architecture). The dashboard, Codex packaging and Jira come next (see [CHANGELOG](CHANGELOG.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
 
 ## What you get
 
@@ -120,7 +120,6 @@ Run these checks when you want to look at one part of the app. Each report shows
 | `/engineering-ops:ui-test` | ui-tester | Does the feature work? Reproducible bug reports | 8 criteria, test plan first |
 | `/engineering-ops:ux-audit` | ux-auditor | Where users hesitate or fail; testable improvements | 6 criteria per journey |
 | `/engineering-ops:architecture-audit` | architecture-auditor | How the system is built; smallest change for your goal | 9 criteria |
-| `/engineering-ops:market-scout` | market-scout | Feature gaps vs competitors; features ranked to win customers | sourced matrix, impact × reach × confidence ÷ effort |
 
 A script uses the same scoring rules each time. For security and accessibility, a script first looks for possible problems in the code. The agent checks which problems are real. The scan hides secret values in its output.
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Removed
+- **market-scout** agent and `/engineering-ops:market-scout` skill.
+
 ## 0.3.0 — 2026-11-08
 
 Each specialist is a **separate agent with its own skill**: the user picks the one they need (no combined QA step). Every agent has a stated goal, numbered scoring criteria with a minimum coverage, evidence rules and a fixed report format (`references/audit-contract.md`).

@@ -72,7 +72,7 @@ Check a prompt any time: `/engineering-ops:refine-prompt <your request>`.
 
 ### 6. Specialist agents (v0.3) — pick the one you need
 
-Menu items **11–17**, or call a skill directly:
+Menu items **11–16**, or call a skill directly:
 
 | You want to know… | Run |
 |---|---|
@@ -82,7 +82,6 @@ Menu items **11–17**, or call a skill directly:
 | Does this feature work before release? | `/engineering-ops:ui-test <feature>` |
 | Is this journey easy to use? | `/engineering-ops:ux-audit <journey>` |
 | How is the system built, and what to change for my goal? | `/engineering-ops:architecture-audit <scope> <goal>` |
-| What are competitors doing that we are not? | `/engineering-ops:market-scout` |
 
 Every result starts with one line: **verdict · score · coverage** (`PASS`, `PASS_WITH_ISSUES`, `FAIL`, `BLOCKED`, `INSUFFICIENT_COVERAGE`). Then findings by severity (Critical → Info), each with a fix. Run the same audit again after fixing: it shows the score before and after, and which findings were fixed.
 
@@ -162,7 +161,7 @@ Every result starts with one line: **verdict · score · coverage** (`PASS`, `PA
 
 ### ٦. الوكلاء المتخصصين (نسخة 0.3): اختار اللي محتاجه
 
-القائمة من **11 لـ 17**، أو شغّل الـ skill مباشرة:
+القائمة من **11 لـ 16**، أو شغّل الـ skill مباشرة:
 
 | عايز تعرف… | شغّل |
 |---|---|
@@ -172,7 +171,6 @@ Every result starts with one line: **verdict · score · coverage** (`PASS`, `PA
 | الميزة شغالة قبل ما ننزلها؟ | `/engineering-ops:ui-test <الميزة>` |
 | الرحلة دي سهلة على المستخدم؟ | `/engineering-ops:ux-audit <الرحلة>` |
 | النظام مبني إزاي، وأغيّر إيه عشان هدفي؟ | `/engineering-ops:architecture-audit <النطاق> <الهدف>` |
-| المنافسين بيعملوا إيه احنا مش بنعمله؟ | `/engineering-ops:market-scout` |
 
 كل نتيجة بتبدأ بسطر واحد: **الحكم · الدرجة · التغطية** (`PASS` أو `PASS_WITH_ISSUES` أو `FAIL` أو `BLOCKED` أو `INSUFFICIENT_COVERAGE`). بعدها المشاكل مترتبة حسب الخطورة من Critical لـ Info، وكل مشكلة معاها طريقة حلها. لو شغّلت نفس الفحص تاني بعد ما تصلّح، هيوريك الدرجة قبل وبعد، وأنهي مشاكل اتحلت.
 

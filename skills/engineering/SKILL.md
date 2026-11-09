@@ -34,13 +34,12 @@ Engineering Ops — <project name or folder>   (setup: done | not done)
 14. UI test (functional test of a feature)
 15. UX audit (journey usability)
 16. Architecture audit
-17. Market scout (competitors and feature gaps)
 ```
 Ask for a number. If setup is not done, recommend 1 first; recommend 9 before the first 10.
 
 ## Safety rules (always)
 - Items 1–9: read-only for Trello / Jira, Git and application code. No commits, pushes, merges, deploys, branch creation, card edits or comments.
-- Items 11–17: read-only audits. They never edit code; browser agents change app data only through actions the user explicitly allowed for that run; market-scout only reads public web pages.
+- Items 11–16: read-only audits. They never edit code; browser agents change app data only through actions the user explicitly allowed for that run.
 - Item 10 follows the run-task skill: code changes only in full mode on a verified task branch; still no commit, push, merge, deploy or card update without explicit permission.
 - Never ask for API keys, tokens or passwords in chat. Credentials live only in environment variables or the connector the user already authorized.
 - Never claim a connection, a monitor or a result you did not verify.
@@ -151,7 +150,7 @@ Also mirror `max_repair_rounds` into `alerts.max_repair_rounds`.
 ## 10. Run a task
 Invoke the `engineering-ops:run-task` skill with the card URL / ID (and mode if the user said it). It must run in this main conversation — do not hand it to a subagent.
 
-## 11–17. Specialist agents (each runs alone — the user picks one)
+## 11–16. Specialist agents (each runs alone — the user picks one)
 Each item invokes its own skill directly. There is no combined QA step: run exactly the one the user chose, with the user's words as arguments.
 | # | Agent | Skill | Goal |
 |---|---|---|---|
@@ -161,5 +160,4 @@ Each item invokes its own skill directly. There is no combined QA step: run exac
 | 14 | ui-tester | `engineering-ops:ui-test` | Does the feature work as expected; reproducible bug reports |
 | 15 | ux-auditor | `engineering-ops:ux-audit` | Where users hesitate or fail on a journey; testable improvements |
 | 16 | architecture-auditor | `engineering-ops:architecture-audit` | How the system is built; smallest change for the stated goal |
-| 17 | market-scout | `engineering-ops:market-scout` | Feature gaps vs competitors; ranked features to win customers |
 Audit history and before/after comparison: `STATE audit-list [--kind <kind>]`.
