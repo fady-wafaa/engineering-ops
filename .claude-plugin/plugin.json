@@ -1,6 +1,6 @@
 {
   "name": "engineering-ops",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Reusable AI engineering ops for any project (frontend, backend, NetSuite): task-board watcher with Card Check, 9-stage engineering workflow with core agents and per-stage model routing, prompt refiner, specialist agents (security OWASP 2025, accessibility WCAG 2.2, performance, UI test, UX, architecture), work log, alerts and an opt-in branch guard.",
   "author": {
     "name": "Fady Wafa"

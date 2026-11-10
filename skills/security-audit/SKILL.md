@@ -1,22 +1,24 @@
 ---
 name: security-audit
-description: Security audit of the current project against the OWASP Top 10:2025 — free static pre-scan (secrets, injection, XSS, SSRF, crypto, supply chain, error handling), then the security-auditor agent confirms each candidate in context and checks access control and auth by reading code. Returns confirmed findings with fixes, a score and a verdict. Read-only. Use for "security review", "check for vulnerabilities", "OWASP", "is this safe to ship".
-argument-hint: "[path or feature to focus on] [--deps]"
+description: Security audit of the current project against the OWASP Top 10:2025. Confirms code findings and, when a test URL and browser tools are available, checks the relevant page in the browser. Reports evidence, a score, a verdict, and offers a Trello card draft. Use for "security review", "check login security", "OWASP", "is this safe to ship".
+argument-hint: "[path or feature] [test URL] [--deps]"
 ---
 
 # Security audit (OWASP Top 10:2025)
 
 Scope: `$ARGUMENTS` (empty = whole repository). `--deps` also runs the package manager's vulnerability audit (it contacts the package registry; ask before running it if the user did not pass `--deps`).
 
+For a page or user journey, use a Testing or Local URL from the project configuration or the user's message. Ask for the URL only when neither is available. Use a test account only when the user has provided one through an approved environment; never request a password in chat. If no browser tool or test environment is available, finish the code audit and mark browser checks as not tested.
+
 `STATE` = `node "${CLAUDE_PLUGIN_ROOT}/scripts/state.mjs"`. Temp files go in `<state_dir>/tmp/` (from `STATE paths`).
 
 ## Steps
 1. **Stack:** `node "${CLAUDE_PLUGIN_ROOT}/scripts/detect-stack.mjs" > <state_dir>/tmp/stack.json`.
 2. **Free pre-scan:** `node "${CLAUDE_PLUGIN_ROOT}/scripts/audit-scan.mjs" security [--deps] [--dir <scope>] --out <state_dir>/tmp/security-scan.json`. Show the one-line summary (candidates by OWASP category). If it finds a committed secret, tell the user immediately — that one cannot wait for the report.
-3. **Agent:** call the Agent tool with `subagent_type: engineering-ops:security-auditor`, `model: sonnet`, and a prompt containing the absolute paths of: `security-scan.json`, `stack.json`, `${CLAUDE_PLUGIN_ROOT}/references/owasp-top10-2025.md`, `${CLAUDE_PLUGIN_ROOT}/references/audit-contract.md`, plus the scope. Ask for the report and the JSON block.
+3. **Agent:** call the Agent tool with `subagent_type: engineering-ops:security-auditor`, `model: sonnet`, and a prompt containing the absolute paths of: `security-scan.json`, `stack.json`, `${CLAUDE_PLUGIN_ROOT}/references/owasp-top10-2025.md`, `${CLAUDE_PLUGIN_ROOT}/references/audit-contract.md`, plus the scope, allowed test URL/origin, role and available synthetic test accounts. Ask it to check the code and then the relevant page in the browser when tools and access are available. Ask for the report and the JSON block, with code and browser evidence distinguished.
 4. **Score:** save the JSON block to `<state_dir>/tmp/security-audit.json` (add `"target": "<repo name or scope>"`, `"total_criteria": 10`, `"min_coverage": 0.7`) and run `STATE audit-record --kind security --json-file <file>`. Use the returned `verdict` and `score` (computed by the script) — not the agent's own wording. If `comparison` exists, show "score before → after, fixed, new".
-5. **Report** to the user in their language: verdict · score · coverage, then findings by severity with fixes, then "Needs review", strengths, not covered, next step. Save the full report to `<state_dir>/reports/security-<date>.md` and give the path.
-6. Offer: turn the top finding into a task (`/engineering-ops:run-task`), or re-run after fixes to compare.
+5. **Report** to the user in their language: verdict · score · coverage, then findings by severity with fixes, browser cases with observed results, "Needs review", strengths, not covered, next step. Say explicitly which conclusions came from code and which were verified in the browser. Save the full report to `<state_dir>/reports/security-<date>.md` and give the path.
+6. **Offer a Trello card:** after the report, offer to create a card for one or more confirmed findings. Prepare a reviewable draft with title, severity, affected page, code and browser evidence, reproduction steps when observed, recommended fix, and verification steps. If the user chooses to create it, get the target board and list from saved project configuration or ask for the missing destination, show the draft, then use the connected Trello card-create tool after the user confirms that specific card. Return its URL. If no Trello write connector is available, give the draft for manual creation; the bundled Trello REST client is read-only. Also offer `/engineering-ops:run-task` or a re-audit after fixes.
 
 ## Rules
-Read-only. No attacks or requests against any server. Never show secret values. Severity follows `audit-contract.md`. Do not edit code here — fixes go through a task.
+The code audit is read-only. Browser checks are limited to the supplied Testing or Local origin, ordinary UI interactions and synthetic test accounts. Do not test production, brute-force, enumerate real accounts, bypass controls, or change application data. Never show credentials, tokens, cookies or secret values. A browser case without the required access stays untested, and an unverified risk stays in "Needs review". Severity follows `audit-contract.md`. Do not edit code here — fixes go through a task.

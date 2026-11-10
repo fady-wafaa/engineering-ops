@@ -1,6 +1,6 @@
 {
   "name": "engineering-ops",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Reusable AI engineering workflows for Claude Code: task watcher, card check, engineering agents with model routing, prompt refiner, work log and alerts.",
   "type": "module",
   "private": true,

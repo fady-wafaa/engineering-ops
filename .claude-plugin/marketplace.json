@@ -8,8 +8,8 @@
     {
       "name": "engineering-ops",
       "source": "./",
-      "description": "Task watcher, engineering agents with model routing, specialist audits (security, accessibility, performance, UI, UX, architecture, market) for any project.",
-      "version": "0.3.0"
+      "description": "Task watcher, engineering agents with model routing, specialist audits (security, accessibility, performance, UI, UX, architecture) for any project.",
+      "version": "0.3.1"
     }
   ]
 }
