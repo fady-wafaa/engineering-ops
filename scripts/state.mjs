@@ -27,6 +27,7 @@ import process from "node:process";
 import { assessCard } from "./lib/assess.mjs";
 import { scoreAudit } from "./lib/audit.mjs";
 import { scorePerf } from "./lib/perf.mjs";
+import { comparePerformance, parsePerfReport } from "./lib/perf-reports.mjs";
 import { scorePrompt } from "./lib/prompt-score.mjs";
 import { routeTask } from "./lib/routing.mjs";
 import {
@@ -1244,13 +1245,15 @@ function cmdAuditRecord() {
     criteria: input.criteria || [],
     findings: (input.findings || []).map((f) => ({ id: f.id, title: f.title, severity: f.severity, location: f.location || null, fix: f.fix || null })),
     report_path: input.report_path || null,
+    ...(kind === "performance" ? { conditions: input.conditions || null, median: input.median || null } : {}),
   };
   store.runs.push(record);
   store.runs = store.runs.slice(-200);
   ensureStateDir();
   atomicWrite(AUDITS_PATH, JSON.stringify(store, null, 2));
   let comparison = null;
-  if (previous) {
+  const perfComparison = kind === "performance" && previous ? comparePerformance(previous, record) : null;
+  if (previous && (!perfComparison || perfComparison.comparable)) {
     const prevIds = new Set(previous.findings.map((f) => f.id));
     const nowIds = new Set(record.findings.map((f) => f.id));
     comparison = {
@@ -1261,9 +1264,10 @@ function cmdAuditRecord() {
       verdict_before: previous.verdict,
       fixed: previous.findings.filter((f) => !nowIds.has(f.id)).map((f) => ({ id: f.id, severity: f.severity })),
       new: record.findings.filter((f) => !prevIds.has(f.id)).map((f) => ({ id: f.id, severity: f.severity })),
+      ...(perfComparison ? { metric_deltas: perfComparison.metrics } : {}),
     };
   }
-  printJson({ ok: true, record, comparison });
+  printJson({ ok: true, record, comparison, ...(perfComparison && !perfComparison.comparable ? { comparison_unavailable: perfComparison.reasons } : {}) });
 }
 
 // Input: an array of perf-probe results (one per run), or {runs:[…], action_ms, action_budget_ms}.
@@ -1273,7 +1277,14 @@ function cmdPerfScore() {
   const v = parsed.value;
   const runs = Array.isArray(v) ? v : v.runs || [];
   if (!runs.length) return fail("perf-score needs at least one probe result");
-  printJson({ ok: true, ...scorePerf(runs, { action_ms: v.action_ms ?? null, action_budget_ms: v.action_budget_ms ?? 1000 }) });
+  printJson({ ok: true, ...scorePerf(runs, { action_ms: v.action_ms ?? null, action_budget_ms: v.action_budget_ms ?? 1000, conditions: v.conditions ?? null }) });
+}
+
+function cmdPerfReport() {
+  const parsed = parseJsonArg(args, "perf-report");
+  if (parsed.error) return fail(parsed.error, { detail: parsed.detail });
+  try { printJson({ ok: true, report: parsePerfReport(String(args.type || ""), parsed.value) }); }
+  catch (error) { fail(error.message); }
 }
 
 function cmdAuditList() {
@@ -1303,6 +1314,7 @@ const COMMANDS = {
   "audit-record": () => withWriteLock(cmdAuditRecord),
   "audit-list": cmdAuditList,
   "perf-score": cmdPerfScore,
+  "perf-report": cmdPerfReport,
   "route-task": cmdRouteTask,
   "prompt-score": cmdPromptScore,
   "run-init": () => withWriteLock(cmdRunInit),

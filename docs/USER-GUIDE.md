@@ -85,6 +85,14 @@ Menu items **11–16**, or call a skill directly:
 
 Every result starts with one line: **verdict · score · coverage** (`PASS`, `PASS_WITH_ISSUES`, `FAIL`, `BLOCKED`, `INSUFFICIENT_COVERAGE`). Then findings by severity (Critical → Info), each with a fix. Run the same audit again after fixing: it shows the score before and after, and which findings were fixed.
 
+#### Performance audit details
+
+`/engineering-ops:performance-audit <page> <action>` still works. For a table filter, name the choice and the rows that should appear. The audit measures click → new rows visible over three runs; it also checks cold and warm visits, mobile and desktop, and SPA route changes when browser tools support them. It shows the request sequence, cache hints, `Server-Timing`, local Web Vitals, scroll diagnostics and memory where exposed. “Slowest observed interaction” is separate from provisional lab INP.
+
+Each metric lists its source, test conditions and sample count. CrUX or RUM field data is labeled page or origin scope and kept separate from local browser measurements. Existing JSON reports can be imported with `node scripts/state.mjs perf-report --type crux|rum|server|k6 --json-file <path>`. The server format is `{ "requests": [{ "route": "/api/tasks", "duration_ms": 120, "status": 200, "trace_id": "...", "db_ms": 30 }] }`; the k6 format is the existing JSON summary. The import command never generates traffic. Missing tools or reports appear as **لم يُقَس** with the exact requirement. Before/after numbers are shown only when target, scenario, device, viewport, network, throttling, build, environment, cache and role match.
+
+At the end, choose to create a Trello card for the top finding, or use `/engineering-ops:run-task` to implement the fix. Creating a card requires your authorization and a Trello connection.
+
 ### 7. Good to know
 
 - Monitoring and analysis never change Trello, Git or your code. Code changes happen only in **full** mode on a task branch.
@@ -173,6 +181,8 @@ Every result starts with one line: **verdict · score · coverage** (`PASS`, `PA
 | النظام مبني إزاي، وأغيّر إيه عشان هدفي؟ | `/engineering-ops:architecture-audit <النطاق> <الهدف>` |
 
 كل نتيجة بتبدأ بسطر واحد: **الحكم · الدرجة · التغطية** (`PASS` أو `PASS_WITH_ISSUES` أو `FAIL` أو `BLOCKED` أو `INSUFFICIENT_COVERAGE`). بعدها المشاكل مترتبة حسب الخطورة من Critical لـ Info، وكل مشكلة معاها طريقة حلها. لو شغّلت نفس الفحص تاني بعد ما تصلّح، هيوريك الدرجة قبل وبعد، وأنهي مشاكل اتحلت.
+
+فحص الأداء يقيس أول زيارة والزيارة المتكررة، والموبايل والديسكتوب، والانتقال بين صفحات SPA. لو بتفحص فلتر جدول SuiteFleet، سمّي الفلتر والصفوف المنتظرة: التقرير يعرض الزمن من الضغط لظهور الصفوف الجديدة، وتسلسل الطلبات وأدلة التأخير المتاحة. بيانات CrUX/RUM تظهر منفصلة عن قياس المتصفح، مع توضيح هل تخص الصفحة أو الموقع. تقدر تستورد تقرير k6 جاهز أو تقرير خادم عبر `node scripts/state.mjs perf-report --type k6|crux|rum|server --json-file <path>`؛ الأمر لا يولّد حملًا. أي قياس ناقص يظهر «لم يُقَس» مع المتطلب. المقارنة قبل/بعد تظهر فقط تحت ظروف تجربة متوافقة. في نهاية التقرير هتلاقي خيار إضافة كارت Trello للمشكلة الرئيسية أو بدء تحسين عبر `/engineering-ops:run-task`.
 
 ### ٧. معلومات مهمة
 
