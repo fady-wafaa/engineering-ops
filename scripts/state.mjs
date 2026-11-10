@@ -25,7 +25,8 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { assessCard } from "./lib/assess.mjs";
-import { scoreAudit } from "./lib/audit.mjs";
+import { compareAuditConditions, scoreAudit } from "./lib/audit.mjs";
+import { recommendAgentModel } from "./lib/agent-model.mjs";
 import { scorePerf } from "./lib/perf.mjs";
 import { comparePerformance, parsePerfReport } from "./lib/perf-reports.mjs";
 import { scorePrompt } from "./lib/prompt-score.mjs";
@@ -1179,7 +1180,7 @@ function cmdDiffIdentity() {
     }
     return `${f}\t${h}`;
   });
-  const hash = crypto.createHash("sha256").update(diff).update("\n--untracked--\n").update(manifest.join("\n")).digest("hex");
+  const hash = crypto.createHash("sha256").update(`branch=${branch}\nbase=${baseCommit}\n`).update(diff).update("\n--untracked--\n").update(manifest.join("\n")).digest("hex");
   const changedFiles = git("diff", "--name-only", base).toString("utf8").split("\n").filter(Boolean);
   let saved = null;
   if (args.save) {
@@ -1245,7 +1246,8 @@ function cmdAuditRecord() {
     criteria: input.criteria || [],
     findings: (input.findings || []).map((f) => ({ id: f.id, title: f.title, severity: f.severity, location: f.location || null, fix: f.fix || null })),
     report_path: input.report_path || null,
-    ...(kind === "performance" ? { conditions: input.conditions || null, median: input.median || null } : {}),
+    conditions: input.conditions || null,
+    ...(kind === "performance" ? { median: input.median || null } : {}),
   };
   store.runs.push(record);
   store.runs = store.runs.slice(-200);
@@ -1253,21 +1255,24 @@ function cmdAuditRecord() {
   atomicWrite(AUDITS_PATH, JSON.stringify(store, null, 2));
   let comparison = null;
   const perfComparison = kind === "performance" && previous ? comparePerformance(previous, record) : null;
-  if (previous && (!perfComparison || perfComparison.comparable)) {
-    const prevIds = new Set(previous.findings.map((f) => f.id));
-    const nowIds = new Set(record.findings.map((f) => f.id));
+  const contextComparison = kind !== "performance" && previous ? compareAuditConditions(previous.conditions, record.conditions) : null;
+  const comparable = (perfComparison || contextComparison)?.comparable ?? true;
+  if (previous && comparable) {
+    const findingKey = (f) => f.location && f.title ? `${f.location}|${f.title}` : f.id;
+    const prevIds = new Set(previous.findings.map(findingKey));
+    const nowIds = new Set(record.findings.map(findingKey));
     comparison = {
       previous_id: previous.id,
       previous_at: previous.at,
       score_before: previous.score,
       score_after: record.score,
       verdict_before: previous.verdict,
-      fixed: previous.findings.filter((f) => !nowIds.has(f.id)).map((f) => ({ id: f.id, severity: f.severity })),
-      new: record.findings.filter((f) => !prevIds.has(f.id)).map((f) => ({ id: f.id, severity: f.severity })),
+      fixed: previous.findings.filter((f) => !nowIds.has(findingKey(f))).map((f) => ({ id: f.id, severity: f.severity })),
+      new: record.findings.filter((f) => !prevIds.has(findingKey(f))).map((f) => ({ id: f.id, severity: f.severity })),
       ...(perfComparison ? { metric_deltas: perfComparison.metrics } : {}),
     };
   }
-  printJson({ ok: true, record, comparison, ...(perfComparison && !perfComparison.comparable ? { comparison_unavailable: perfComparison.reasons } : {}) });
+  printJson({ ok: true, record, comparison, ...(!comparable ? { comparison_unavailable: (perfComparison || contextComparison).reasons } : {}) });
 }
 
 // Input: an array of perf-probe results (one per run), or {runs:[…], action_ms, action_budget_ms}.
@@ -1284,6 +1289,13 @@ function cmdPerfReport() {
   const parsed = parseJsonArg(args, "perf-report");
   if (parsed.error) return fail(parsed.error, { detail: parsed.detail });
   try { printJson({ ok: true, report: parsePerfReport(String(args.type || ""), parsed.value) }); }
+  catch (error) { fail(error.message); }
+}
+
+function cmdAgentModel() {
+  const parsed = parseJsonArg(args, "agent-model");
+  if (parsed.error) return fail(parsed.error, { detail: parsed.detail });
+  try { printJson({ ok: true, ...recommendAgentModel(parsed.value) }); }
   catch (error) { fail(error.message); }
 }
 
@@ -1315,6 +1327,7 @@ const COMMANDS = {
   "audit-list": cmdAuditList,
   "perf-score": cmdPerfScore,
   "perf-report": cmdPerfReport,
+  "agent-model": cmdAgentModel,
   "route-task": cmdRouteTask,
   "prompt-score": cmdPromptScore,
   "run-init": () => withWriteLock(cmdRunInit),

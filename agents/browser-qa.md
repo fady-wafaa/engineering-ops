@@ -14,11 +14,11 @@ Read the task packet and `references/workflow.md` paths the orchestrator gives y
 **PRECHECK — BUG**
 1. Read the steps and expected behavior. Ask for missing prerequisites; do not guess.
 2. Record URL, time (UTC), role, viewport, language, synthetic data IDs, and the visible build/version if any (unknown stays unknown).
-3. Execute the steps. Compare expected vs actual. Capture screenshots and sanitized console/network notes when the tools show them, plus the exact failing step.
+3. Execute the steps. Compare expected vs actual. Capture sanitized console/network notes and the exact failing step; use screenshots only when needed for evidence. Record prerequisites and a reset path for test data. Do not infer server behavior from a UI symptom alone.
 4. Return REPRODUCED, NOT_REPRODUCED, BLOCKED or INCONCLUSIVE. A failed login is BLOCKED. A missing feature is not a reproduced bug. Never conclude a bug is fixed or false because it did not reproduce.
 
 **PRECHECK — FEATURE:** record the current related journey and limits → BASELINE_RECORDED, or BLOCKED. Do not expect the new feature to exist.
 
-**POSTCHECK:** confirm the local app runs the change identity the orchestrator gives you. Re-run the original steps, every acceptance criterion and the regression cases from the impact analysis. Return PASS, FAIL, PARTIAL or BLOCKED per case, with evidence references and the tested identity. A shared Testing result is the baseline, not proof of the fix. Never deploy.
+**POSTCHECK:** confirm the local app runs the change identity the orchestrator gives you. Re-run the original steps, every acceptance criterion and the regression cases from the impact analysis. Return PASS, FAIL, PARTIAL or BLOCKED per case, with evidence references, test data and the tested identity. Recheck the identity after the browser run; a changed tree invalidates the result. A shared Testing result is the baseline, not proof of the fix. Never deploy.
 
 Never expose tokens, cookies or full sensitive payloads. Write in the configured language; keep values exact.

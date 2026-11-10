@@ -6,6 +6,7 @@
 // Model aliases are the ones Claude Code accepts for agents/skills: haiku, sonnet, opus.
 // "opus" stands for "the premium tier available to this account" — the orchestrator must
 // check what the account really offers and say so if it differs.
+import { recommendAgentModel } from "./agent-model.mjs";
 
 export const STAGE_WORKERS = {
   "0_prompt": "prompt-refiner",
@@ -87,15 +88,26 @@ export function routeTask(input = {}) {
   if (Number(input.failed_diagnoses || 0) >= 2) propose("3_analysis", "two diagnoses already failed");
   if (Number(input.repair_rounds || 0) >= 2) propose("6_implementation", "repairs keep failing");
 
+  const workerStages = {
+    "prompt-refiner": "0_prompt", "browser-qa": "2_baseline", "requirements-analyst": "3_analysis",
+    "code-implementer": "6_implementation", "quality-gate": "7_checks_postcheck", "code-reviewer": "8_final_review",
+  };
+  const workerModels = Object.fromEntries(Object.entries(workerStages).map(([agent, stage]) => [agent,
+    recommendAgentModel({ ...input, agent, scope_items: input.estimated_files,
+      allow_premium: proposals.some((p) => p.stage === stage),
+      premium_reason: proposals.find((p) => p.stage === stage)?.why,
+      premium_approved: approved.has(stage) || approved.has(agent) })]));
+
   return {
     ok: true,
     size,
     score: sized.score,
     reasons: sized.reasons,
     models,
+    worker_models: workerModels,
     workers: STAGE_WORKERS,
     premium_proposals: proposals,
-    approval_required: proposals.some((p) => p.approval_required),
+    approval_required: proposals.some((p) => p.approval_required) || Object.values(workerModels).some((p) => p.approval_required),
     context_budget: BUDGET[size],
     split_recommended: size === "XL",
   };

@@ -129,6 +129,8 @@ describe("model routing (#6)", () => {
     assert.equal(r.models["3_analysis"], "haiku");
     assert.equal(r.models["6_implementation"], "sonnet");
     assert.equal(r.models["7_checks_postcheck"], "haiku");
+    assert.equal(r.worker_models["browser-qa"].selected_model, "haiku");
+    assert.equal(r.worker_models["quality-gate"].selected_model, "haiku");
     assert.equal(r.approval_required, false);
   });
 
@@ -145,9 +147,12 @@ describe("model routing (#6)", () => {
     assert.equal(r.size, "XL");
     assert.equal(r.approval_required, true);
     assert.equal(r.models["3_analysis"], "sonnet");
+    assert.equal(r.worker_models["requirements-analyst"].recommended_model, "opus");
+    assert.equal(r.worker_models["requirements-analyst"].selected_model, "sonnet");
     assert.equal(r.split_recommended, true);
     const ok = routeTask({ ...input, premium_approved_stages: ["3_analysis"] });
     assert.equal(ok.models["3_analysis"], "opus");
+    assert.equal(ok.worker_models["requirements-analyst"].selected_model, "opus");
     assert.equal(ok.models["6_implementation"], "sonnet");
     assert.equal(ok.approval_required, false);
   });
@@ -281,6 +286,9 @@ describe("pipeline state commands", () => {
     assert.ok(fs.readdirSync(path.join(stateDir, "ev")).some((f) => f.endsWith(".patch")));
     fs.writeFileSync(path.join(repo, "new.txt"), "y");
     assert.notEqual(run("diff-identity", "--repo", repo).change_identity, d2.change_identity, "editing an untracked file changes it too");
+    const beforeBranch = run("diff-identity", "--repo", repo).change_identity;
+    git(repo, "switch", "-q", "-c", "feature/other");
+    assert.notEqual(run("diff-identity", "--repo", repo).change_identity, beforeBranch, "same diff on a different branch is a different change identity");
     assert.equal(run("diff-identity", "--repo", tmp).ok, false, "not a git repo -> clear error");
   });
 

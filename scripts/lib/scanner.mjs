@@ -66,16 +66,18 @@ export function scanFiles(root, rules, { includeTests = false } = {}) {
   const perRule = new Map();
   const files = walk(root);
   let scanned = 0;
+  let skippedOversize = 0;
+  let skippedTests = 0;
   for (const file of files) {
     const rel = path.relative(root, file).split(path.sep).join("/");
     const ext = extOf(file);
     const applicable = rules.filter((r) => r.exts.includes(ext));
     if (!applicable.length) continue;
     const isTest = TEST_FILE.test("/" + rel);
-    if (isTest && !includeTests) continue;
+    if (isTest && !includeTests) { skippedTests++; continue; }
     let content;
     try {
-      if (fs.statSync(file).size > MAX_FILE_BYTES) continue;
+      if (fs.statSync(file).size > MAX_FILE_BYTES) { skippedOversize++; continue; }
       content = fs.readFileSync(file, "utf8");
     } catch {
       continue;
@@ -105,7 +107,8 @@ export function scanFiles(root, rules, { includeTests = false } = {}) {
     }
   }
   const capped = [...perRule.entries()].filter(([, n]) => n >= MAX_HITS_PER_RULE).map(([id]) => id);
-  return { hits, files_scanned: scanned, files_seen: files.length, capped_rules: capped };
+  return { hits, files_scanned: scanned, files_seen: files.length, files_limit_reached: files.length >= MAX_FILES,
+    files_skipped_oversize: skippedOversize, files_skipped_tests: skippedTests, capped_rules: capped };
 }
 
 // Project-level supply-chain and secret-hygiene checks (A02/A03/A04). Read-only.

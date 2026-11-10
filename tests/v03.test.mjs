@@ -38,6 +38,14 @@ beforeEach(() => {
 });
 
 describe("security scan (OWASP 2025)", () => {
+  it("reports scan limits and skipped test/oversize files", () => {
+    write("src/large.js", "x".repeat(1024 * 1024 + 1));
+    write("src/example.test.js", "eval(x)");
+    const result = scanSecurity(tmp);
+    assert.equal(result.files_skipped_oversize, 1);
+    assert.equal(result.files_skipped_tests, 1);
+    assert.equal(result.files_limit_reached, false);
+  });
   it("finds planted issues in each family and maps them to categories", () => {
     write("src/api.js", [
       "app.get('/proxy', (req, res) => fetch(req.query.url));",

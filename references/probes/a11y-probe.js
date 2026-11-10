@@ -46,7 +46,8 @@
   const lum = ({ r, g, b }) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
   const bgOf = (el) => { for (let n = el; n; n = n.parentElement) { const s = getComputedStyle(n); if (s.backgroundImage && s.backgroundImage !== "none") return null; const c = parse(s.backgroundColor); if (c && c.a >= 0.99) return c; } return { r: 255, g: 255, b: 255, a: 1 }; };
 
-  const result = { url: location.href, title: document.title, lang: document.documentElement.lang || null, dir: document.documentElement.dir || getComputedStyle(document.documentElement).direction, viewport: { w: innerWidth, h: innerHeight } };
+  const result = { url: location.href, title: document.title, lang: document.documentElement.lang || null, dir: document.documentElement.dir || getComputedStyle(document.documentElement).direction, viewport: { w: innerWidth, h: innerHeight },
+    method_note: "Computed names, contrast and target sizes are candidates; verify in the accessibility tree and rendered UI. Live-region count does not prove announcement." };
 
   const imgs = [...document.querySelectorAll("img")].filter(visible);
   result.images = { total: imgs.length, missing_alt: [] };

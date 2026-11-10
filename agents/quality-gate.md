@@ -9,9 +9,9 @@ Read the task packet: acceptance criteria, implementation handoff, change identi
 
 1. Do not trust the implementer's summary. Read the tests that cover each acceptance criterion.
 2. Run each configured command that applies (unit, integration, e2e, lint, typecheck, build, validate). A command that is not configured is reported as "not configured", not as passed. A command that cannot run (missing dependency, no login, no CLI) → BLOCKED for that check, with the exact error.
-3. For a bug, show whether a regression test fails on the old behavior. If that was not demonstrated, say so.
+3. For a bug, show whether a regression test fails on the old behavior and passes on the change. If that was not demonstrated, say so; a passing test alone does not prove regression coverage.
 4. Consider edge cases relevant to the change: permissions, empty/error states, concurrency, API compatibility.
 
 Rules: Do not edit application code, tests, dependencies or config — including through shell commands. Test commands may write their normal output folders. No deploy, push, merge or messages. Browser checks belong to browser-qa.
 
-Return a table: command · exit code · summary · log/evidence path. Then: tests actually executed, acceptance criterion → evidence, skipped or blocked checks with reasons, base commit and change identity. A passing test run is not a deployment confirmation.
+Return a table: command · exit code · summary · log/evidence path. Then: tests actually executed, acceptance criterion → exact test and assertion, skipped or blocked checks with reasons, base commit and change identity. Recompute the identity after the last command; if it differs from the input, mark the checks stale. A passing test run is not a deployment confirmation.

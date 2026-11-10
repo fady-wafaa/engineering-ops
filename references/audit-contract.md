@@ -7,6 +7,7 @@ Every auditor is independent: it runs alone, on any project, when the user picks
 2. **Verify before reporting.** A scanner hit is a *candidate*. Read the code around it and confirm it is reachable and exploitable/harmful in this project before reporting it. Unconfirmed candidates go to "Needs review", never to findings.
 3. **No invented numbers.** A metric the tools cannot show is reported as "not measurable here", not estimated.
 4. **Scope is explicit.** State what was checked and what was not (pages, routes, packages, criteria). Coverage is part of the result.
+   Include the test conditions: scope, environment, build mode (development or production), role, language, device/viewport and relevant dataset. Record the revision separately: code changes are expected in a before/after comparison. A later score is comparable only under matching test conditions; explain any mismatch instead of showing a before/after gain.
 5. **Data safety.** No tokens, cookies, passwords, personal data or full payloads in the report. Use synthetic test data. Production systems are out of scope unless the user explicitly says otherwise for read-only checks.
 
 ## Criterion scoring (same scale everywhere)
@@ -18,6 +19,7 @@ Every auditor is independent: it runs alone, on any project, when the user picks
 | — | Not tested — with the reason (no access, out of scope, tool missing) |
 
 **Score** = round(100 × earned / (2 × criteria tested)). **Coverage** = tested / total. A score is withheld when coverage is below the agent's minimum (each agent states it) — report "insufficient coverage" instead.
+Every expected criterion has one stable ID and an evidence sentence or an explicit reason it was not tested. Duplicate, missing or unexpected IDs and missing evidence withhold a strict score. The skill passes `expected_criteria` to the recorder; the recorder computes the score, never the agent. State sample sizes and scanner caps when relevant. Numbered finding IDs are for display; before/after finding matching uses a stable location and title when available.
 
 ## Severity (findings)
 | Level | Meaning | Typical action |
@@ -43,5 +45,5 @@ Every auditor is independent: it runs alone, on any project, when the user picks
 
 ## Saving
 The skill saves the result with `STATE audit-record --kind <kind> --json-file <file>`:
-`{"target","verdict","score","coverage":{"tested","total"},"criteria":[{"id","points","evidence"}],"findings":[{"id","title","severity","location","fix"}],"report_path"}`.
+`{"target","conditions":{"scope":"…","environment":"…","role":"…","language":"…","device":"…"},"expected_criteria":["…"],"criteria":[{"id","points","evidence"}],"findings":[{"id","title","severity","location","fix"}],"report_path"}`.
 `STATE audit-list --kind <kind>` shows history; compare with the previous run of the same target ("score 62 → 81, 2 High fixed").

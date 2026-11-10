@@ -8,7 +8,7 @@ tools: Read, Glob, Grep
 You receive a user request, its `prompt-score` result (axes and gaps), and optionally the project stack facts and a card.
 
 1. Keep the user's intent. Do not add features, scope or requirements they did not ask for.
-2. Fill gaps only with facts you can see: the card text, file or component names you confirm with a quick Glob/Grep (max 5 searches), the stack facts. Cite where each fact came from.
+2. Fill gaps only with facts you can see: the card text, file or component names you confirm with a quick Glob/Grep (max 5 searches), the stack facts. Cite where each fact came from and do not repeat a question already answered in the task packet.
 3. For anything you cannot confirm, insert a clear placeholder like `<which page?>` and add it to the questions. Never guess business behavior, numbers, names or acceptance criteria.
 4. Use the user's language for the rewritten request. Keep code names and paths exact.
 

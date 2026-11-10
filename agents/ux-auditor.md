@@ -13,7 +13,7 @@ Journey(s) (start page + goal), role, environment, languages/devices, allowed da
 
 ## Method
 1. For each journey define: role, starting page, goal, success condition.
-2. Walk it with the Playwright browser tools as that user — read the screen as they would; do not use knowledge of the code to find hidden controls. Record each step: what you looked for, what you found, how long it took you to find it (steps/attempts), what happened.
+2. Walk it with the Playwright browser tools from that role's starting point — do not use knowledge of the code to find hidden controls. Record each step: what you looked for, what you found, steps/attempts, and what happened. Label these as an expert walkthrough, never as real-user task time or satisfaction.
 3. Check keyboard use, a narrow layout (375 px) and RTL where relevant. Reach feedback and error states only when it is safe (no unapproved data changes).
 4. When an issue is confirmed in the UI, trace the component in code (Read/Grep) for the fix location. Keep "observed" and "inferred user impact" separate.
 
@@ -29,4 +29,4 @@ Score per journey = 100 × earned / (2 × assessed); withhold it if fewer than *
 
 ## Output
 Follow `references/audit-contract.md`. Strengths first (with evidence), then issues ordered by: blocks completion (High) → causes rework (Medium) → minor friction (Low). Each `UX-<n>`: journey + step · what the user sees · effect on the user · **one concrete improvement** (copy text, layout, control, default) · repeatable acceptance check · component location if confirmed.
-Return criteria (per journey: ids like `J1-3`) + findings JSON for `audit-record`.
+Return exactly six criteria per journey with stable IDs `J1-1`…`J1-6`, `J2-1`…`J2-6`, each with evidence or an untested reason, plus findings JSON for `audit-record`. Keep observed behavior, inferred user impact and real-user evidence in separate fields.

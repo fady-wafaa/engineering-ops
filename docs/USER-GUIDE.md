@@ -85,6 +85,8 @@ Menu items **11–16**, or call a skill directly:
 
 Every result starts with one line: **verdict · score · coverage** (`PASS`, `PASS_WITH_ISSUES`, `FAIL`, `BLOCKED`, `INSUFFICIENT_COVERAGE`). Then findings by severity (Critical → Info), each with a fix. Run the same audit again after fixing: it shows the score before and after, and which findings were fixed.
 
+Before any specialist or workflow agent starts, Engineering Ops reviews the requested scope and shows the default and recommended model, with reasons for a proposed change. A premium recommendation is never used without approval for that named agent and scope. Audit scores require one evidenced result or explicit untested reason per expected criterion; comparisons are withheld when the stated conditions differ.
+
 #### Performance audit details
 
 `/engineering-ops:performance-audit <page> <action>` still works. For a table filter, name the choice and the rows that should appear. The audit measures click → new rows visible over three runs; it also checks cold and warm visits, mobile and desktop, and SPA route changes when browser tools support them. It shows the request sequence, cache hints, `Server-Timing`, local Web Vitals, scroll diagnostics and memory where exposed. “Slowest observed interaction” is separate from provisional lab INP.
@@ -181,6 +183,8 @@ At the end, choose to create a Trello card for the top finding, or use `/enginee
 | النظام مبني إزاي، وأغيّر إيه عشان هدفي؟ | `/engineering-ops:architecture-audit <النطاق> <الهدف>` |
 
 كل نتيجة بتبدأ بسطر واحد: **الحكم · الدرجة · التغطية** (`PASS` أو `PASS_WITH_ISSUES` أو `FAIL` أو `BLOCKED` أو `INSUFFICIENT_COVERAGE`). بعدها المشاكل مترتبة حسب الخطورة من Critical لـ Info، وكل مشكلة معاها طريقة حلها. لو شغّلت نفس الفحص تاني بعد ما تصلّح، هيوريك الدرجة قبل وبعد، وأنهي مشاكل اتحلت.
+
+قبل بدء أي agent، النظام بيراجع المطلوب والنطاق ويعرض الموديل الافتراضي والمقترح وسبب تغييره. الموديل الأعلى لا يُستخدم من غير موافقة محددة له وللنطاق. كل معيار في تقرير التدقيق محتاج دليل أو سبب واضح لعدم فحصه؛ والمقارنة قبل/بعد بتتوقف لو ظروف الفحص اختلفت.
 
 فحص الأداء يقيس أول زيارة والزيارة المتكررة، والموبايل والديسكتوب، والانتقال بين صفحات SPA. لو بتفحص فلتر جدول SuiteFleet، سمّي الفلتر والصفوف المنتظرة: التقرير يعرض الزمن من الضغط لظهور الصفوف الجديدة، وتسلسل الطلبات وأدلة التأخير المتاحة. بيانات CrUX/RUM تظهر منفصلة عن قياس المتصفح، مع توضيح هل تخص الصفحة أو الموقع. تقدر تستورد تقرير k6 جاهز أو تقرير خادم عبر `node scripts/state.mjs perf-report --type k6|crux|rum|server --json-file <path>`؛ الأمر لا يولّد حملًا. أي قياس ناقص يظهر «لم يُقَس» مع المتطلب. المقارنة قبل/بعد تظهر فقط تحت ظروف تجربة متوافقة. في نهاية التقرير هتلاقي خيار إضافة كارت Trello للمشكلة الرئيسية أو بدء تحسين عبر `/engineering-ops:run-task`.
 

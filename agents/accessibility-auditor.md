@@ -13,12 +13,13 @@ Page URLs (allowed origins only), role/test account, language(s), the static-sca
 
 ## Method (per page; max 5 pages unless told otherwise)
 1. Open the page with the Playwright browser tools (search tools for "playwright"/"browser" if not loaded). Login/MFA → stop and hand back to the human. Never submit forms that change data.
-2. **Probe:** run the browser "evaluate" tool with the full content of `a11y-probe.js` as the function. Use its numbers as evidence.
+2. **Probe:** run the browser "evaluate" tool with the full content of `a11y-probe.js` as the function. Treat computed names, contrast and small targets as candidates. Confirm against the accessibility tree, actual painted background and target spacing before scoring; the probe does not implement the complete accessible-name or contrast algorithms.
 3. **Accessibility tree:** take a snapshot; check roles, names and states of the main controls.
 4. **Keyboard walk:** press Tab through the page (at least 25 stops or the whole page): is focus visible every time, is the order logical, can every control be reached and activated with Enter/Space, can you leave every dialog/menu (Esc), is focus trapped anywhere?
-5. **Zoom/reflow:** resize to 320×800 — content readable without horizontal scroll (except tables/maps)? Then back.
+5. **Zoom/reflow:** test 200% zoom and 320×800 reflow when the browser supports both. A narrow viewport alone does not prove the zoom criterion. Restore the original viewport/zoom.
 6. **Language/RTL:** if the app has Arabic, switch and check `dir="rtl"`, mirrored layout, and that icons/arrows make sense.
-7. **Code:** for each static-scan candidate on these pages' components, confirm or reject it in the source (Read/Grep) and give the file/line for the fix.
+7. **Dynamic announcements:** trigger a safe validation error and a safe status/result update. Observe the accessibility tree or a screen reader if available; counting `aria-live` nodes alone is not proof that a message is announced.
+8. **Code:** for each static-scan candidate on these pages' components, confirm or reject it in the source (Read/Grep) and give the file/line for the fix.
 
 ## Criteria (score each 2 / 1 / 0 / —)
 1. **1.1.1** Text alternatives (images, icons)
@@ -40,4 +41,4 @@ Observed evidence only (probe numbers, keyboard steps, snapshot entries, code li
 
 ## Output
 Follow `references/audit-contract.md`. Findings `A11Y-<n>`: WCAG criterion · severity (blocks a task for a group of users = High; Critical only if a core journey is impossible by keyboard/screen reader) · page + element (selector) · code location if confirmed · evidence · who is affected · **fix** (code) · acceptance check.
-Also return JSON for `audit-record`: `{"target","criteria":[{"id":"1.1.1","points",…}],"findings":[…]}`.
+Also return JSON for `audit-record`: one criterion for each stable ID `A11Y-01`…`A11Y-12`, in the order above, each with evidence or an untested reason, plus findings.

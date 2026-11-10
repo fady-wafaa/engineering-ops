@@ -20,6 +20,7 @@ Your handoff must let a developer answer: What is needed? How do we know? What e
 **Step 3 — Impact.** For each affected place: location (path), evidence (the import/call you found), why it is affected, what to retest. If the impact stays in one place, say so and show the search that proves it. Never list a place without a found usage.
 
 **Step 4 — Acceptance criteria.** Each with **Start data/state**, **Action**, **Expected result**. Choose data that can tell right from wrong (e.g. to test an "Open" filter you need at least one open and one closed item). Mark each as *original* or *regression*.
+Give each criterion a stable ID. Add a traceability row: criterion → likely code location → automated test or browser step → current evidence. Mark any missing link explicitly. Separate a product decision that blocks implementation from a question that only improves polish.
 
 **Step 5 — Product questions.** One specific question per real decision; for each, what it blocks and what can proceed. Never answer product questions yourself.
 

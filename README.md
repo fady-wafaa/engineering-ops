@@ -123,7 +123,7 @@ Run these checks when you want to look at one part of the app. Each report shows
 
 A script uses the same scoring rules each time. For security and accessibility, a script first looks for possible problems in the code. The agent checks which problems are real. The scan hides secret values in its output.
 
-**Model routing:** each task is sized S / M / L / XL from simple signals (files, ambiguity, shared code, cross-layer, security, migration). Cheap stages run on Haiku, code and analysis on Sonnet; a premium model is only *proposed* for a named stage and needs your approval.
+**Model routing:** before any agent starts, a preflight reviews the requested scope and shows default → recommended model and the reasons. Workflow tasks are sized S / M / L / XL from files, ambiguity, shared code, cross-layer, security and migration signals; stage 7 selects the browser and command-check agents separately. A premium model is only *proposed* for a named agent and scope and needs your approval.
 
 **Card Check** gives every new or changed card `READY` or `MISSING_INFO` with the exact missing items:
 - all cards: clear title, description, type (BUG / FEATURE / MIXED), screen or area
