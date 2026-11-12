@@ -9,7 +9,7 @@
     "node": ">=18.17"
   },
   "scripts": {
-    "test": "node --test tests/state.original.test.mjs tests/plugin.test.mjs tests/v02.test.mjs tests/v03.test.mjs tests/performance.test.mjs tests/agent-model.test.mjs tests/audit-contract.test.mjs",
+    "test": "node --test tests/state.original.test.mjs tests/plugin.test.mjs tests/v02.test.mjs tests/v03.test.mjs tests/performance.test.mjs tests/agent-model.test.mjs tests/audit-contract.test.mjs tests/applicability.test.mjs",
     "state": "node scripts/state.mjs"
   }
 }

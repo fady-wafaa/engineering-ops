@@ -222,7 +222,9 @@ describe("performance scoring", () => {
     assert.equal(r.median.lcp_ms, 2400, "one slow outlier does not decide");
     assert.equal(r.median.inp_ms, 180);
     assert.equal(r.criteria.find((c) => c.id === "lcp_ms").points, 2);
-    assert.equal(r.core_web_vitals_pass, true);
+    assert.equal(r.lab_core_web_vitals.all_good, true);
+    assert.equal(r.core_web_vitals_pass, null, "good lab runs are not a field Core Web Vitals pass");
+    assert.equal(r.core_web_vitals_field.assessed, false);
   });
 
   it("needs-improvement and poor bands; repeated requests; not measurable stays null", () => {
@@ -234,13 +236,15 @@ describe("performance scoring", () => {
     assert.equal(p.fcp_ms, null);
     assert.equal(p.slowest_api_ms, null, "no API call -> not measurable");
     assert.equal(p.repeated_requests, 1);
-    assert.equal(r.core_web_vitals_pass, false);
+    assert.equal(r.lab_core_web_vitals.all_good, false);
+    assert.equal(r.core_web_vitals_pass, null);
     assert.match(r.note, /Fewer than 3 runs/);
   });
 
   it("scores a named action against its budget; median helper", () => {
     const r = scorePerf([probe({ lcp: 1000, inp: 50, cls: 0, fcp: 500, ttfb: 100, tbt: 0, kb: 100 })], { action_ms: 1800, action_budget_ms: 1000 });
-    assert.equal(r.criteria.find((c) => c.id === "action_ms").points, 1);
+    // One maximum means met or exceeded: no invented middle band.
+    assert.equal(r.criteria.find((c) => c.id === "action_ms").points, 0);
     assert.equal(median([3, 1, 2]), 2);
     assert.equal(median([1, 2, 3, 4]), 2.5);
     assert.equal(median([null, undefined]), null);

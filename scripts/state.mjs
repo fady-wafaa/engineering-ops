@@ -25,7 +25,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { assessCard } from "./lib/assess.mjs";
-import { compareAuditConditions, scoreAudit } from "./lib/audit.mjs";
+import { compareAuditConditions, compareScoringBasis, scoreAudit } from "./lib/audit.mjs";
 import { recommendAgentModel } from "./lib/agent-model.mjs";
 import { scorePerf } from "./lib/perf.mjs";
 import { comparePerformance, parsePerfReport } from "./lib/perf-reports.mjs";
@@ -1235,6 +1235,9 @@ function cmdAuditRecord() {
   const input = parsed.value;
   if (!input.target) return fail("audit-record input needs a target");
   const scored = kind === "market" ? { score: null, verdict: input.verdict || "REPORT", coverage: null, counts: null } : scoreAudit(input);
+  // Contradictory criterion states are refused outright — they are never stored, so history
+  // cannot carry a record whose own states disagree.
+  if (scored.contradictions?.length) return fail("audit-record refused: contradictory criterion states", { contradictions: scored.contradictions });
   const store = readJsonSafe(AUDITS_PATH, { version: 1, runs: [] });
   const previous = [...store.runs].reverse().find((r) => r.kind === kind && r.target === input.target) || null;
   const record = {
@@ -1247,6 +1250,7 @@ function cmdAuditRecord() {
     findings: (input.findings || []).map((f) => ({ id: f.id, title: f.title, severity: f.severity, location: f.location || null, fix: f.fix || null })),
     report_path: input.report_path || null,
     conditions: input.conditions || null,
+    budgets: input.budgets || null,
     ...(kind === "performance" ? { median: input.median || null } : {}),
   };
   store.runs.push(record);
@@ -1256,7 +1260,11 @@ function cmdAuditRecord() {
   let comparison = null;
   const perfComparison = kind === "performance" && previous ? comparePerformance(previous, record) : null;
   const contextComparison = kind !== "performance" && previous ? compareAuditConditions(previous.conditions, record.conditions) : null;
-  const comparable = (perfComparison || contextComparison)?.comparable ?? true;
+  // Conditions alone are not enough: the scoring policy, the budgets and the sets of applicable
+  // and assessed criteria must match too, or the two scores were not computed by the same rule.
+  const basisComparison = previous && kind !== "market" ? compareScoringBasis(previous, record) : null;
+  const reasons = [...((perfComparison || contextComparison)?.reasons || []), ...(basisComparison?.reasons || [])];
+  const comparable = previous ? reasons.length === 0 : true;
   if (previous && comparable) {
     const findingKey = (f) => f.location && f.title ? `${f.location}|${f.title}` : f.id;
     const prevIds = new Set(previous.findings.map(findingKey));
@@ -1270,19 +1278,28 @@ function cmdAuditRecord() {
       fixed: previous.findings.filter((f) => !nowIds.has(findingKey(f))).map((f) => ({ id: f.id, severity: f.severity })),
       new: record.findings.filter((f) => !prevIds.has(findingKey(f))).map((f) => ({ id: f.id, severity: f.severity })),
       ...(perfComparison ? { metric_deltas: perfComparison.metrics } : {}),
+      fixed_note: "A finding listed here only disappeared from the later report under matching conditions. Re-run the case that produced it, or cite direct evidence of the fix, before calling it fixed.",
     };
   }
-  printJson({ ok: true, record, comparison, ...(!comparable ? { comparison_unavailable: (perfComparison || contextComparison).reasons } : {}) });
+  printJson({ ok: true, record, comparison, ...(!comparable ? { comparison_unavailable: reasons } : {}) });
 }
 
-// Input: an array of perf-probe results (one per run), or {runs:[…], action_ms, action_budget_ms}.
+// Input: an array of perf-probe results (one per run), or
+// {runs:[…], budgets:{result_visible_ms:{max_ms,source,…}}, field:{source,metrics}, conditions, action_ms, action_budget_ms}.
+// The legacy {action_ms, action_budget_ms} pair is still read; its default budget is marked legacy.
 function cmdPerfScore() {
   const parsed = parseJsonArg(args, "perf-score");
   if (parsed.error) return fail(parsed.error, { detail: parsed.detail });
   const v = parsed.value;
   const runs = Array.isArray(v) ? v : v.runs || [];
   if (!runs.length) return fail("perf-score needs at least one probe result");
-  printJson({ ok: true, ...scorePerf(runs, { action_ms: v.action_ms ?? null, action_budget_ms: v.action_budget_ms ?? 1000, conditions: v.conditions ?? null }) });
+  printJson({ ok: true, ...scorePerf(runs, {
+    action_ms: v.action_ms ?? null,
+    action_budget_ms: v.action_budget_ms,
+    budgets: v.budgets ?? null,
+    field: v.field ?? null,
+    conditions: v.conditions ?? null,
+  }) });
 }
 
 function cmdPerfReport() {

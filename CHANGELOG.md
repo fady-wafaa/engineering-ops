@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### Changed — audit applicability, coverage and evidence (`docs/SCORING-POLICY.md`)
+- **Three states per expected criterion.** `assessed` (0/1/2 + evidence), `not_assessed` (applies, could not be checked + reason, optional `reason_code`), `not_applicable` (+ reason and a `basis` of `scope` or `product_property`). Legacy `points: null` still reads as *not assessed*.
+- **Composite criteria carry `sub_checks`.** RTL on a product with no right-to-left language is a not-applicable **sub-check**, so the keyboard and narrow-layout results stay visible and the parent criterion stays applicable. A parent cannot score 2 while an applicable sub-check is untested.
+- **Coverage is computed over applicable criteria** (not-assessed stays in the denominator), and reports show expected / assessed / not assessed / not applicable. New verdict `NOT_APPLICABLE` when nothing applies.
+- **`min_coverage` is an exact ratio** — `"4/6"` (UX, per journey), `"5/8"` (UI), `"6/9"` (Architecture), `"8/12"` (accessibility), `"7/10"` (security). This fixes the contradiction where the agents said 4/6 and 6/9 while the skills passed `0.67`, which rejected exactly those counts. After a not-applicable exclusion, the same ratio applies to the reduced count.
+- **`required_criteria` is enforced in the engine.** UX goal completion (`J*-3`) and the UI happy path (`UI-1`) now gate the verdict: assessed at 0 → `FAIL` whatever the rest score; not assessed → `INSUFFICIENT_COVERAGE`, which the report distinguishes from a failure.
+- **`audit-record` refuses contradictory criterion states** and stores nothing, instead of recording a score it cannot justify.
+- **Comparisons also require a matching scoring basis** — policy version, coverage rule, required criteria, budgets, and the sets of applicable and assessed criterion IDs — on top of the test conditions. A disappearing finding is reported with an explicit note that it is not proof of a fix.
+
+### Changed — performance (`perf-score`)
+- `result_visible_ms`, `spa_navigation_ms` and `action_ms` are scored **only against a documented or user-given budget**, recorded with its source, unit, measurement start and end, summary method and scenario. No budget → a measured baseline outside the score. Budget but no measurement → recorded as owed.
+- **A single maximum scores met (2) or exceeded (0).** The old "budget × 3 = needs improvement" middle band is gone; an intermediate score needs a declared `needs_improvement_max_ms`.
+- **Lab is no longer reported as field.** Browser runs produce `lab_core_web_vitals`; `core_web_vitals_pass` is now a field verdict from the p75 of field data for the device class, passing only when LCP, INP and CLS all meet target, and `null` otherwise.
+- Thresholds are labelled by origin: `core_web_vitals` (published) vs `engineering_ops_default` vs a named budget. Legacy `{action_ms, action_budget_ms}` input still works; its default is marked `legacy_default`.
+
+### Added
+- `docs/SCORING-POLICY.md` — the whole policy, with its references, and a plain statement that the scores and ratios are this plugin's instrument, while WCAG, OWASP and Core Web Vitals keep their own meaning.
+- `tests/applicability.test.mjs` — 33 acceptance tests over the rules above, run by `npm test`.
+
 ### Removed
 - **market-scout** agent and `/engineering-ops:market-scout` skill.
 

@@ -14,6 +14,12 @@ The browser probe emits ordered Resource Timing entries, cache hints, response s
 
 CrUX page/origin records and RUM reports remain separate from local browser runs. Existing k6 JSON summaries are imported without generating traffic. Capacity conclusions need workload, environment, duration and VU context; endurance needs a time series. SuiteFleet field and k6 reports: **لم يُقَس**; provide the exports or access.
 
+## Budgets, lab and field (2026-11-12)
+
+`result_visible_ms`, `spa_navigation_ms` and `action_ms` are scored only against a budget the project documents or the user gives (`docs/SCORING-POLICY.md` §5). The fixture covers: a 1500 ms median scoring 0 against a 1000 ms budget and 2 against a 2000 ms budget; a single maximum producing met-or-exceeded with no middle band; a measurement with no budget reported as a baseline outside the score; a budget with no measurement recorded as owed; and a changed budget suppressing the score comparison.
+
+Lab runs produce `lab_core_web_vitals` only. `core_web_vitals_pass` is a **field** verdict: it stays `null` until field data supplies a p75 for LCP, INP and CLS for the device class, and it passes only when all three meet their targets. No browser run, however fast, sets it. SuiteFleet field data: **لم يُقَس**.
+
 ## Verification
 
-Run `node --test tests/performance.test.mjs tests/v03.test.mjs` with Node 18.17 or newer. The performance tests cover the SuiteFleet fixture, comparison gating, CrUX/RUM/server/k6 parsing and CLI import. The full test suite also passed on 2026-11-10.
+Run `node --test tests/performance.test.mjs tests/v03.test.mjs tests/applicability.test.mjs` with Node 18.17 or newer. These cover the SuiteFleet fixture, comparison gating, CrUX/RUM/server/k6 parsing, CLI import, the budget rules and the lab/field separation. The full suite (`npm test`, 160 tests) passed on 2026-11-12.

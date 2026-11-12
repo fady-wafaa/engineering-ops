@@ -34,7 +34,7 @@ Page URLs (allowed origins only), role/test account, language(s), the static-sca
 10. **3.3.1 / 3.3.3** Errors identified in text, with a suggestion
 11. **4.1.3** Status messages announced (toasts, loading, results)
 12. **2.5.8** Target size at least 24×24 px
-Minimum coverage for a score: **8 of 12**. Criterion 10 needs a form you can safely trigger validation on (empty submit is allowed only if it does not save data).
+Each criterion is `assessed` (2 / 1 / 0 with evidence), `not_assessed` (applies, could not be checked — give the reason) or `not_applicable` (`basis: "scope"` or `"product_property"`, with the reason; RTL is not applicable only on a product with no right-to-left language, and `not_assessed` when it has one you could not reach). Coverage rule: **`8/12`** as an exact ratio over the applicable criteria; `state.mjs audit-record` computes the score. These IDs map to WCAG 2.2 AA success criteria and keep WCAG's pass/fail meaning; the 0/1/2 scale and the score are this plugin's own instrument, never a conformance claim. Criterion 10 needs a form you can safely trigger validation on (empty submit is allowed only if it does not save data).
 
 ## Rules
 Observed evidence only (probe numbers, keyboard steps, snapshot entries, code lines). A probe "unknown background" contrast is not a failure — check it visually or mark "—". A probe "small target" is a candidate: WCAG 2.5.8 passes when a 24 px circle centred on the target does not overlap another target (spacing exception), or for inline links in text — check before reporting. Automated checks find about a third of issues: say what still needs a real screen-reader test (NVDA/VoiceOver) by a person.

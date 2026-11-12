@@ -23,7 +23,7 @@ Absolute paths to: the scan JSON (`audit-scan security`), `references/owasp-top1
 ## Criteria (score each 2 / 1 / 0 / —)
 A01 Access control · A02 Configuration · A03 Supply chain · A04 Cryptography & secrets · A05 Injection · A06 Insecure design · A07 Authentication · A08 Integrity · A09 Logging & alerting · A10 Exceptional conditions.
 2 = checked, no confirmed issue · 1 = only Medium/Low issues · 0 = a High/Critical issue · — = could not check (say why).
-Minimum coverage for a score: **7 of 10** categories.
+Each criterion is `assessed` (2 / 1 / 0 with evidence), `not_assessed` (applies, could not be checked — say why) or `not_applicable` (`basis: "scope"` or `"product_property"`; a category is not applicable only when the project demonstrably has no such surface, never because the sample missed it). Coverage rule: **`7/10`** as an exact ratio over the applicable categories; `state.mjs audit-record` computes the score. These IDs are the OWASP Top 10:2025 categories and keep OWASP's meaning; the 0/1/2 scale and the score are this plugin's own instrument, not an OWASP verdict.
 
 ## Hard rules
 - Never print secret values — refer to "the key in `.env.production:24`". Recommend **rotation** for any committed secret.

@@ -20,13 +20,28 @@ Scope: **Interaction** (one action, e.g. open a dropdown, apply a filter) · **P
 5. Return the raw probe results and conditions. Include each check's outcome, source, sample count, conditions and unavailable measurements. Do not compare runs with different conditions.
 
 ## Criteria (scored by `state.mjs perf-score` from the median — do not score yourself)
-LCP ≤ 2.5 s · INP ≤ 200 ms · CLS ≤ 0.1 · FCP ≤ 1.8 s · TTFB ≤ 0.8 s · blocking ≤ 200 ms · transfer ≤ 1.6 MB · slowest API ≤ 1 s · no repeated identical requests · visible result ≤ 1 s · SPA navigation ≤ 1 s.
-2 = good, 1 = needs improvement, 0 = poor, — = not measurable. Minimum coverage: **5** criteria.
+
+**Published Core Web Vitals thresholds**, applied to lab medians and labelled as lab: LCP ≤ 2.5 s · INP ≤ 200 ms · CLS ≤ 0.1.
+**engineering-ops default thresholds**, not a standard — say so: FCP ≤ 1.8 s · TTFB ≤ 0.8 s · blocking ≤ 200 ms · transfer ≤ 1.6 MB · slowest API ≤ 1 s · no repeated identical requests.
+**Budget-only metrics**: `result_visible_ms`, `spa_navigation_ms`, `action_ms`. These depend on the product, so they are scored **only** against a budget the project documents or the user gives.
+
+* Ask for the budget up front and record **its source, its unit, where the measurement starts, where it ends, and how the samples were summarized** (median of three runs here). Compare a measurement with a budget only when the scenario and the summary method agree.
+* **Measured, no budget** → report the value and the sample count as a baseline outside the score. That is a complete answer, not a missing one.
+* **Budget, not measured** → record that the measurement is owed, and why it could not be taken.
+* **One maximum** → met or exceeded. Do not invent a middle band: an intermediate score needs a `needs_improvement_max_ms` the project agreed to.
+
+2 = good / within budget, 1 = needs improvement (only inside a declared range), 0 = poor / over budget, — = not measurable or no budget.
+
+**Lab is not field.** Fast browser runs produce `lab_core_web_vitals` and nothing more. A **field** Core Web Vitals assessment uses the **75th percentile** of field data for the device class and passes only when LCP, INP **and** CLS all meet their targets. With incomplete field data, report what is available and decline the field verdict. Never present a lab result as a field pass.
 
 ## Rules
 - Only numbers the tools showed. Lab values from one machine are not field data — say so.
+- A score is comparable with an earlier one only when the conditions, the budgets and the scoring policy all match. **Changing a budget ends the comparison**; report the new measurement against the new budget and say the earlier score was computed by a different rule.
 - Never run load tests or generate traffic from this audit. Import existing k6 reports only. Never use production unless the user explicitly asked (and then read-only, normal browsing only).
 - Recommendations name the cause they fix and the metric they should move ("lazy-load the 900 KB hero image → LCP"). Typical fixes: compress/resize images, preload the LCP resource, code-split large bundles, cache/dedupe API calls, paginate, debounce input, move work off the main thread, reserve space for late content (CLS).
 
 ## Output
-Follow `references/audit-contract.md`. Findings `PERF-<n>`: metric affected · severity · evidence (numbers + request/element/trace) · location (URL, file if confirmed) · cause · **fix** · expected effect · how to re-measure. Show a click-to-visible-result timeline for the named action. End with two choices: create a Trello card for the top finding (only on explicit authorization and with an available Trello connection), or start `/engineering-ops:run-task` to implement the fix. Return the raw probe JSON array.
+Follow `references/audit-contract.md`. Findings `PERF-<n>`: metric affected · severity · evidence (numbers + request/element/trace) · location (URL, file if confirmed) · cause · **fix** · expected effect · how to re-measure. Show a click-to-visible-result timeline for the named action, and keep **lab** and **field** results in separate sections. List baselines measured without a budget, and measurements owed against a budget, as their own lines. End with two choices: create a Trello card for the top finding (only on explicit authorization and with an available Trello connection), or start `/engineering-ops:run-task` to implement the fix. Return the raw probe JSON array.
+
+## References
+[Web Vitals](https://web.dev/articles/vitals) · [Lab and field data](https://web.dev/articles/lab-and-field-data-differences) · [Performance budgets](https://web.dev/articles/performance-budgets-101)
